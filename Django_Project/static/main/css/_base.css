@@ -1,0 +1,99 @@
+:root{
+    --blue-darkest: #3D5467;
+    --blue-darker: #53738D;
+    --blue: #7E9CB4;
+    --blue-lighter:#9BB1C3;
+    --blue-lightest: #B8C5D1;
+    --offwhite1: #f3f3f3;
+    --offwhite2: #0000001a;
+    --offwhite3: #0000001a;
+    --offwhite4: #0000001a;
+    --border-radius: 8px;
+  
+  
+    --color-bg: #E9ECEF;
+    --color-on-bg: #77607C;
+  
+    --color-surface1: white;
+    --color-on-surface1: #495057;
+  
+    --color-surface2: #CED4DA;
+    --color-on-surface2: #495057;
+  
+    --color-accent1:#6743ED;
+    --color-accent1-light: #7A7BB8;
+    --color-accent1-lighter: #AFB0D4;
+    --color-accent1-lightest: #CFD0FF;
+    --color-on-accent1: #F8F9FA;
+    --color-on-accent1-light: #F8F9FA;
+  
+    --color-accent2: #DE6E4B;
+    --color-accent2-dark: #CD4D25;
+    --color-accent2-darker: #B14220;
+    --color-on-accent2: #F8F9FA;
+  
+  }
+html, body{
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: var(--color-bg);
+    font-family: "Inter", sans-serif;
+}
+.main{
+    margin: 10px;
+}
+
+.user-menu{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.user-menu .icon{
+    font-size: 32px;
+}
+
+.navbar{
+    background: var(--color-surface1) !important;
+    padding-bottom: 0;
+}
+
+.nav.nav-tabs .nav-item .nav-link {
+    border-right: 1px solid rgb(0 0 0 / 12%);  
+}
+.nav-item.dropdown{
+    padding-bottom: 8px;
+}
+.nav-item.dropdown.active{
+    box-shadow:0px 9px 0px -7px var(--color-accent1)
+}
+
+
+@media all and (min-width: 992px) {
+	.navbar .dropdown-menu-end{ right:0; left: auto;  }
+	.navbar .nav-item .dropdown-menu{  display:block; opacity: 0;  visibility: hidden; transition:.3s; margin-top:0;  }
+	/* .navbar .nav-item:hover .nav-link{ color: #fff;  } */
+	.navbar .dropdown-menu.fade-down{ top:80%; transform: rotateX(-75deg); transform-origin: 0% 0%; }
+	.navbar .dropdown-menu.fade-up{ top:180%;  }
+	.navbar .nav-item:hover .dropdown-menu{ transition: .3s; opacity:1; visibility:visible; top:100%; transform: rotateX(0deg); }
+}
+
+h2{
+    color: var(--color-on-bg);
+}
+
+.generic-title-wrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.generic-title{
+    padding: 18px 24px;
+    margin: 8px;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: var(--offwhite1);
+    color: var(--color-accent1-light);
+    border-radius: 8px;
+    border: 2px var(--color-accent1) solid;
+}

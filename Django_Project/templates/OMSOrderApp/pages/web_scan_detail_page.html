@@ -1,0 +1,204 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<div class="row">
+    <div class="col-sm-2">
+        <h6>Trailer#:</h6>
+        <input class="form-control" type="text" readonly id="trailer_number" value="{{trailer_number}}"
+               style="font-size:22px; color:black;">
+    </div>
+
+    <div class="col-sm-2">
+        <h6>Total Batch#:</h6>
+        <input class="form-control" type="number" readonly id="total_batch" value="{{total_box|default_if_none:0}}"
+               style="font-size:22px; color:black;">
+    </div>
+
+    <div class="col-sm-2">
+        <h6>Current Batch#:</h6>
+        <input class="form-control" type="number" readonly id="current_batch" value="0"
+               style="font-size:22px; color:black;">
+    </div>
+
+    <div class="col-sm-1" style="display:None;">
+        <h6>Check ECWMS</h6>
+        <input class="form-control" type="checkbox" id="wms_check">
+    </div>
+
+    <div class="col-sm-2" style="display:None;">
+        <input class="form-control" type="text" readonly name="username" id="username"
+               value="{{username}}"
+               style="font-size:22px; color:black;">
+    </div>
+</div>
+
+<hr class="sidebar-divider">
+
+<div class="row">
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-8">
+                <textarea class="form-control" id="tracking_log" cols="100" rows="15"
+                          style="resize: none;font-size:18px;color:black;" readonly></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-4">
+                <input class="form-control" id="tracking_input" type="text" placeholder="Tracking#">
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control btn btn-success" id="tracking_submit" type="button" value="Enter">
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control btn btn-warning" id="unlock_btn" type="button"
+                       value="Unlock" disabled>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-10" style="display:None;">
+        <div class="form-group row">
+            <div class="col-sm-4">
+                <audio controls loop id="error_sound">
+                    <source src="{% static 'main/sound/beep-warning-6387.mp3' %}" type="audio/mpeg">
+                </audio>
+            </div>
+            <div class="col-sm-4">
+                <audio controls id="success_sound">
+                    <source src="{% static 'main/sound/success-1-6297.mp3' %}" type="audio/mpeg">
+                </audio>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr>
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-10">
+            <div class="form-group row">
+                <div class="col-sm-4">
+                    <input class="form-control btn btn-info" type="submit" name="close_btn"
+                           value="Close Trailer">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    document.querySelector('#tracking_input').focus();
+    document.querySelector('#tracking_input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#tracking_submit').click();
+        }
+    };
+
+    $("#tracking_submit").click(function(){
+        if (document.getElementById("wms_check").checked) {
+            var isCheck = 1;
+        } else {
+            var isCheck = 0;
+        }
+        console.log(isCheck);
+        var trailer_number = $('#trailer_number').val();
+        var tracking_input = $('#tracking_input').val();
+        var username = $('#username').val();
+        if (tracking_input){
+            var token = '{{csrf_token}}';
+            var btn = document.getElementById("confirm_btn");
+
+            $.ajax({
+                headers: { "X-CSRFToken": token },
+                url: "{% url 'OMSOrderApp:web_scan_function' %}",
+                type: "POST",
+                data: {
+                    isCheck: isCheck,
+                    trailer_number: trailer_number,
+                    tracking_input: tracking_input,
+                    username: username
+                },
+                success: function(data){
+                    console.log(data['result']);
+                    if (data['result']){
+                        var x = document.getElementById("success_sound");
+                        x.play();
+
+                        var current_batch = document.getElementById("current_batch").value;
+                        current_batch++;
+                        document.getElementById("current_batch").value = current_batch;
+
+                        var total_batch = document.getElementById("total_batch").value;
+                        total_batch++;
+                        document.getElementById("total_batch").value = total_batch;
+
+                        const messageInputDom = document.querySelector('#tracking_input');
+                        messageInputDom.value = '';
+                    }
+                    else{
+                        var x = document.getElementById("error_sound");
+                        x.play();
+                        // lock tracking # enter button
+                        document.getElementById("tracking_submit").disabled = true;
+                        document.getElementById("unlock_btn").disabled = false;
+                        document.getElementById('tracking_input').setAttribute('readonly', true);
+                    }
+
+                    document.querySelector('#tracking_log').value += "[" + current_batch + "] " + (data.message + '\n');
+                    var textarea = document.getElementById('tracking_log');
+                    textarea.scrollTop = textarea.scrollHeight;
+                },
+            });
+        }
+        else{
+            window.alert("Empty tracking#");
+        }
+    });
+
+    document.querySelector('#unlock_btn').onclick = function(e) {
+        document.getElementById("tracking_submit").disabled = false;
+        document.getElementById("unlock_btn").disabled = true;
+        document.getElementById('tracking_input').removeAttribute('readonly');
+        var x = document.getElementById("error_sound");
+        x.pause();
+        const messageInputDom = document.querySelector('#tracking_input');
+        messageInputDom.value = '';
+        messageInputDom.focus();
+    };
+
+});
+
+</script>
+{% endblock scripts %}
+

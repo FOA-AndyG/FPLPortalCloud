@@ -1,0 +1,148 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block content %}
+<title>{{title}}</title>
+
+<!-- Content Row -->
+<div class="row">
+    {{ trailer_number|json_script:"trailer_number_socket" }}
+    {{ username|json_script:"user_name" }}
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <h4>{{trailer_number}}</h4>
+            </div>
+            <div class="col-sm-1">
+                <label>Check with System</label>
+                <input class="form-control" type="checkbox" id="wms_check" checked>
+            </div>
+            <div class="col-sm-3">
+                <h4>Current Batch Number</h4>
+                <input class="form-control" type="number" readonly id="current_batch" value="0"
+                       style="font-size:22px; color:black;">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-8">
+                <textarea class="form-control" id="tracking_log" cols="100" rows="15"
+                          style="resize: none;font-size:18px;color:black;" readonly></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-4">
+                <input class="form-control" id="tracking_input" type="text" placeholder="Tracking#">
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control btn btn-success" id="tracking_submit" type="button" value="Enter">
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control btn btn-warning" id="unlock_btn" type="button"
+                       value="Unlock" disabled>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-4">
+                <audio controls loop id="error_sound" style="display:none;">
+                    <source src="{% static 'main/sound/beep-warning-6387.mp3' %}" type="audio/mpeg">
+                </audio>
+            </div>
+            <div class="col-sm-4">
+                <audio controls id="success_sound" style="display:none;">
+                    <source src="{% static 'main/sound/success-1-6297.mp3' %}" type="audio/mpeg">
+                </audio>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<script>
+    const trailerNumber = JSON.parse(document.getElementById('trailer_number_socket').textContent);
+    const userName = JSON.parse(document.getElementById('user_name').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ScanApp/'
+        + trailerNumber
+        + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.result_signal){
+            console.log(data.result_signal);
+            var x = document.getElementById("success_sound");
+            x.play();
+
+            var current_number = document.getElementById("current_batch").value;
+            current_number++;
+            document.getElementById("current_batch").value = current_number;
+        }
+        else {
+            console.log(data.result_signal);
+            var x = document.getElementById("error_sound");
+            x.play();
+            // lock tracking # enter button
+            document.getElementById("tracking_submit").disabled = true;
+            document.getElementById("unlock_btn").disabled = false;
+            document.getElementById('tracking_input').setAttribute('readonly', true);
+        }
+
+        document.querySelector('#tracking_log').value += "[" + current_number + "] " + (data.message + '\n');
+        var textarea = document.getElementById('tracking_log');
+        textarea.scrollTop = textarea.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#tracking_input').focus();
+    document.querySelector('#tracking_input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#tracking_submit').click();
+        }
+    };
+
+    document.querySelector('#tracking_submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#tracking_input');
+        const message = messageInputDom.value;
+
+        if (document.getElementById("wms_check").checked) {
+            var isCheck = "true";
+        } else {
+            var isCheck = "false";
+        }
+        chatSocket.send(JSON.stringify({
+            'username': userName,
+            'trailer': trailerNumber,
+            'message': message,
+            'isCheck': isCheck
+        }));
+        messageInputDom.value = '';
+    };
+
+    document.querySelector('#unlock_btn').onclick = function(e) {
+        document.getElementById("tracking_submit").disabled = false;
+        document.getElementById("unlock_btn").disabled = true;
+        document.getElementById('tracking_input').removeAttribute('readonly');
+        var x = document.getElementById("error_sound");
+        x.pause();
+    };
+
+</script>
+{% endblock scripts %}

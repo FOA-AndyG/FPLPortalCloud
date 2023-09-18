@@ -1,0 +1,55 @@
+{% extends 'OMSOrderApp/include/_base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'OMSOrderApp/include/_tab.html' %}
+{% include 'OMSOrderApp/include/_datatables.html' %}
+{% include 'OMSOrderApp/include/_home_navbar.html' %}
+
+<title>{{title}}</title>
+
+<div class="container" style="width: auto; min-height: 100%;">
+
+    <form enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-2">
+                <label>Select a file to import/选择文件:</label>
+                <input class="form-control" name="import_file_path" required type="file">
+            </div>
+            <div class="col-sm-1">
+                <label style="visibility:hidden">click</label>
+                <button class="btn btn-primary btn-block loading" name="import_button" type="submit"
+                data-loading-text="<i class='fas fa-sync fa-spin'></i> Importing...">
+                    <i class="fas fa-cloud-upload-alt"></i> Import/上传
+                </button>
+            </div>
+            <div class="col-sm-2">
+                <label style="visibility:hidden">click</label>
+                <a class="btn btn-info" download
+                   href="{{template_download_path}}">
+                    <i class="fas fa-cloud-download-alt"></i> Download file template/下载订单导入模板
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <hr>
+    <h4>Import result will show below: </h4>
+
+    {% if msg %}
+    <label>{{msg}}</label>
+    {% endif %}
+
+    {% include 'OMSOrderApp/parts/order_import_result_table.html' %}
+
+</div>
+
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+
+{% endblock scripts %}

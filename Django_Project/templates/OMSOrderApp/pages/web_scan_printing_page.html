@@ -1,0 +1,102 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr class="sidebar-divider">
+
+<div class="row">
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <select class="form-control" id="select_input">
+                    <option value="Tracking">Tracking#</option>
+                    <option value="SKU">SKU#</option>
+                </select>
+            </div>
+
+            <div class="col-sm-4">
+                <input class="form-control" id="tracking_input" type="text">
+            </div>
+            <div class="col-sm-2">
+                <input class="form-control btn btn-success" id="tracking_submit" type="button" value="Enter">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-8">
+                <textarea class="form-control" id="tracking_log" cols="100" rows="15"
+                          style="resize: none;font-size:18px;color:black;" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    document.querySelector('#tracking_input').focus();
+    document.querySelector('#tracking_input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#tracking_submit').click();
+        }
+    };
+
+    $("#tracking_submit").click(function(){
+        var select_input = $('#select_input').val();
+        var tracking_input = $('#tracking_input').val();
+        if (tracking_input){
+            var token = '{{csrf_token}}';
+
+            $.ajax({
+                headers: { "X-CSRFToken": token },
+                url: "{% url 'OMSOrderApp:web_scan_printing_page' %}",
+                type: "POST",
+                data: {
+                    select_input: select_input,
+                    tracking_input: tracking_input,
+                },
+                success: function(data){
+                    console.log(data['result']);
+                    const messageInputDom = document.querySelector('#tracking_input');
+                    messageInputDom.value = '';
+                    document.querySelector('#tracking_log').value += data.message + '\n';
+                    var textarea = document.getElementById('tracking_log');
+                    textarea.scrollTop = textarea.scrollHeight;
+                },
+            });
+        }
+        else{
+            window.alert("Empty input");
+        }
+    });
+});
+
+</script>
+{% endblock scripts %}
+

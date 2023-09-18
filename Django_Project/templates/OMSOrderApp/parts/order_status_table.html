@@ -1,0 +1,41 @@
+<!-- Begin datatable Content -->
+<div class="container-fluid">
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold">{{df_title}}</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered main_table" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        {% for column in df_columns %}
+                        <th>{{column}}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        {% for column in df_columns %}
+                        <th>{{column}}</th>
+                        {% endfor %}
+                    </tr>
+                    </tfoot>
+
+                    <tbody>
+                    {% for i, r in df.iterrows %}
+                    <tr>
+                        <td>{{ r.picking_code }}</td>
+                        <td>{{ r.picking_order_cnt }}</td>
+                        <td>{{ r.picking_item_cnt }}</td>
+                        <td>{{ r.picking_lc_cnt }}</td>
+                    </tr>
+                    {% endfor%}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.container-fluid -->

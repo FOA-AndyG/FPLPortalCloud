@@ -1,0 +1,23 @@
+.navbar-nav, .badgeContainer{
+    display: flex !important;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.surveyBadge {
+    color: white;
+    background-color: #ff295a;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 4px;
+}
+
+@media screen and (max-width: 1200px) {
+    .navbar-nav {
+        display: block !important;
+    }
+}

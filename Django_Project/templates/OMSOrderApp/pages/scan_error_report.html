@@ -1,0 +1,133 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr>
+<!--TRACKING compare -->
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-4">
+            <label>
+                <b>Search:</b>
+            </label>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group row">
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" name="search_text" placeholder="Enter Tracking to search (At least four digit)">
+                    </div>
+                    <div class="col-sm-4">
+                        <button class="btn btn-success btn-block short_loading" name="search_btn" type="submit"
+                                data-loading-text="<i class='fas fa-sync fa-spin'></i> Searching..."
+                                data-toggle="tooltip" data-placement="top"
+                                title="Enter empty to search latest 500 records">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</form>
+<hr>
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Begin datatable Content -->
+    <div class="container-fluid">
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold">{{df_title}}</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered report_table" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tfoot>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for i, r in display_df.iterrows %}
+                        <tr>
+                            <td>{{ r.ContainerNo }}</td>
+                            <td>{{ r.Carrier }}</td>
+                            <td>{{ r.Tracking|stringformat:"s" }}</td>
+                            <td>{{ r.CreateDate|date:'m/d/Y H:i:s' }}</td>
+                            <td>{{ r.MachineName}}</td>
+                            <td>{{ r.Note}}</td>
+                        </tr>
+                        {% endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+</div>
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    $('body').keypress(function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $("#generate_btn").click();
+        }
+    });
+
+    $('.short_loading').on('click', function() {
+        var $this = $(this);
+        var loadingText = '<i class="fas fa-sync fa-spin"></i> Loading...';
+        if ($(this).html() !== loadingText) {
+          $this.disabled = true;
+          $this.data('original-text', $(this).html());
+          $this.html(loadingText);
+        }
+        setTimeout(function() {
+          $this.html($this.data('original-text'));
+        }, 10000);
+    });
+});
+
+</script>
+{% endblock scripts %}
+

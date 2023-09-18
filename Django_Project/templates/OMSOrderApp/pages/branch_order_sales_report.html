@@ -1,0 +1,141 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr>
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-2">
+            <label>Select Branch: </label>
+            <select class="form-control" name="branch_select" required>
+                <option disabled selected value="">Select</option>
+                {% for name in select_list %}
+                <option value="{{name}}">{{name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <label>Start Date:</label>
+            <input class="form-control" name="start_date" required type="date">
+        </div>
+        <div class="col-sm-2">
+            <label>End Date:</label>
+            <input class="form-control" name="end_date" required type="date">
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-success btn-block short_loading" type="submit" name="generate_btn" id="generate_btn"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting..."
+            >
+                <i class="fa fa-download"></i> Export
+            </button>
+        </div>
+    </div>
+</form>
+<hr>
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Begin datatable Content -->
+    <div class="container-fluid">
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold">{{df_title}}</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered report_table" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tfoot>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for i, r in display_df.iterrows %}
+                        <tr>
+                            <td>{{ r.branch }}</td>
+                            <td>{{ r.order_code }}</td>
+                            <td>{{ r.reference_no }}</td>
+                            <td>{{ r.product_barcode }}</td>
+                            <td>{{ r.product_title }}</td>
+                            <td>{{ r.op_quantity|floatformat:0 }}</td>
+                            <td>{{ r.total_price }}</td>
+                            <td>{{ r.so_ship_time|date:'m-d-Y'}}</td>
+                        </tr>
+                        {% endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+</div>
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    $('body').keypress(function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $("#generate_btn").click();
+        }
+    });
+
+    $('.short_loading').on('click', function() {
+        var $this = $(this);
+        var loadingText = '<i class="fas fa-sync fa-spin"></i> Loading...';
+        if ($(this).html() !== loadingText) {
+          $this.disabled = true;
+          $this.data('original-text', $(this).html());
+          $this.html(loadingText);
+        }
+        setTimeout(function() {
+          $this.html($this.data('original-text'));
+        }, 2000);
+    });
+
+    setTimeout(function() {
+        $('.messages').fadeOut('slow');
+    }, 10000); // <-- time in milliseconds
+});
+
+</script>
+{% endblock scripts %}
+

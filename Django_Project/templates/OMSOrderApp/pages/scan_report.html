@@ -1,0 +1,212 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr>
+<!--TRACKING compare -->
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-2">
+            <label>Select Picking List: *</label>
+            <select class="form-control" name="search_list" required onmousedown="if(this.options.length>8){this.size=8;}"  onchange='this.size=0;' onblur="this.size=0;">
+                <option value="" disabled selected>Picking list</option>
+                {% for picking in overall_picking_list %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+                {% for picking in picking_list %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-info btn-block short_loading" type="submit" name="compare_btn" id="compare_btn"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting..."
+            >
+                <i class="fa fa-download"></i> Export All
+            </button>
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-info btn-block short_loading" type="submit" name="compare2_btn" id="compare2_btn"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting..."
+            >
+                <i class="fa fa-download"></i> Export Pending Orders
+            </button>
+        </div>
+    </div>
+</form>
+<br>
+<!-- WH3 picking list -->
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-2">
+            <label>Select WH3 Picking List: *</label>
+            <select class="form-control" name="search_list" required onmousedown="if(this.options.length>8){this.size=8;}"  onchange='this.size=0;' onblur="this.size=0;">
+                <option value="" disabled selected>Picking list</option>
+                {% for picking in overall_picking_list %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+                {% for picking in picking_list_wh3 %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-info btn-block short_loading" type="submit" name="export_btn_wh3"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting..."
+            >
+                <i class="fa fa-download"></i> Export Pending Orders
+            </button>
+        </div>
+    </div>
+</form>
+<br>
+<!-- Search -->
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-4">
+            <label>
+                <b>Search:</b>
+            </label>
+            <div class="form-group row">
+                <div class="col-sm-8">
+                    <input class="form-control" type="text" name="search_text" placeholder="Enter Tracking to search (At least four digit)">
+                </div>
+                <div class="col-sm-4">
+                    <button class="btn btn-success btn-block short_loading" name="search_btn" type="submit"
+                            data-loading-text="<i class='fas fa-sync fa-spin'></i> Searching..."
+                            data-toggle="tooltip" data-placement="top"
+                            title="Enter empty to search latest 500 records">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<hr>
+
+<!-- test -->
+<form enctype="multipart/form-data" method="post" style="display: none;">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-4">
+            <label><b>Import Tracking from FEDEX:</b></label>
+            <input class="form-control" name="import_file_path" required type="file">
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-primary btn-block short_loading" type="submit" name="import_btn"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting..."
+            >
+                <i class="fa fa-upload"></i> Import
+            </button>
+        </div>
+    </div>
+    <hr>
+</form>
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Begin datatable Content -->
+    <div class="container-fluid">
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold">{{df_title}}</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered scan_table" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tfoot>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for i, r in display_df.iterrows %}
+                        <tr>
+                            <td>{{ r.ContainerNo }}</td>
+                            <td>{{ r.Carrier }}</td>
+                            <td>{{ r.Tracking|stringformat:"s" }}</td>
+                            <td>{{ r.CreateDate|date:'m/d/Y H:i:s' }}</td>
+                            <td>{{ r.MachineName}}</td>
+                            <td>{{ r.order_code}}</td>
+                            <td>{{ r.product_code}}</td>
+                        </tr>
+                        {% endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+</div>
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    $('body').keypress(function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $("#generate_btn").click();
+        }
+    });
+
+    $('.short_loading').on('click', function() {
+        var $this = $(this);
+        var loadingText = '<i class="fas fa-sync fa-spin"></i> Loading...';
+        if ($(this).html() !== loadingText) {
+          $this.disabled = true;
+          $this.data('original-text', $(this).html());
+          $this.html(loadingText);
+        }
+        setTimeout(function() {
+          $this.html($this.data('original-text'));
+        }, 10000);
+    });
+});
+
+</script>
+{% endblock scripts %}
+

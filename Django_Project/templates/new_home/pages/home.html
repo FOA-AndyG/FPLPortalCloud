@@ -1,0 +1,312 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block content %}
+<hr class="sidebar-divider">
+
+<!-- Order Content Row -->
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-auto">
+            <h5>Orders:</h5>
+        </div>
+        <div class="col-auto">
+            <select class="form-control" id="order_select" name="order_select" onchange="dateChange(this)">
+                {% for key, value in select_dict.items %}
+                    {% if key == time_type %}
+                    <option value="{{key}}" selected>{{value}}</option>
+                    {% else %}
+                    <option value="{{key}}">{{value}}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-success btn-block loading" name="order_confirm_btn" type="submit">Confirm</button>
+        </div>
+        <div class="col-sm-6">
+        </div>
+    </div>
+    <br>
+
+    <div class="row">
+        <!-- Total orders   -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Orders
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total_orders">{{total_orders}}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submitted Orders    -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                New Orders
+                            </div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="new_orders">{{new_orders}}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending orders -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Pending Orders
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="pending_orders">{{pending_orders}}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Shipped orders-->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Shipped Orders
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="shipped_orders">{{shipped_orders}}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<hr class="sidebar-divider">
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Bar Chart: Container -->
+    {% include 'new_home/parts/total_upcoming_container_chart.html' %}
+</div>
+
+<hr class="sidebar-divider">
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-lg-6 mb-4">
+        <!-- Color System -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body">
+                        Primary
+                        <div class="text-white-50 small">#4e73df</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-success text-white shadow">
+                    <div class="card-body">
+                        Success
+                        <div class="text-white-50 small">#1cc88a</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-info text-white shadow">
+                    <div class="card-body">
+                        Info
+                        <div class="text-white-50 small">#36b9cc</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-warning text-white shadow">
+                    <div class="card-body">
+                        Warning
+                        <div class="text-white-50 small">#f6c23e</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-danger text-white shadow">
+                    <div class="card-body">
+                        Danger
+                        <div class="text-white-50 small">#e74a3b</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-secondary text-white shadow">
+                    <div class="card-body">
+                        Secondary
+                        <div class="text-white-50 small">#858796</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-light text-black shadow">
+                    <div class="card-body">
+                        Light
+                        <div class="text-black-50 small">#f8f9fc</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card bg-dark text-white shadow">
+                    <div class="card-body">
+                        Dark
+                        <div class="text-white-50 small">#5a5c69</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+
+        <!-- Illustrations -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
+                         src="" alt="...">
+                </div>
+                <p>Add some quality, svg illustrations to your project courtesy of <a
+                        target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
+                    constantly updated collection of beautiful svg images that you can use
+                    completely free and without attribution!</p>
+                <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
+                    unDraw &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Approach -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
+            </div>
+            <div class="card-body">
+                <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
+                    CSS bloat and poor page performance. Custom CSS classes are used to create
+                    custom components and custom utility classes.</p>
+                <p class="mb-0">Before working with this theme, you should become familiar with the
+                    Bootstrap framework, especially the utility classes.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+
+<!-- db_upcoming_container_bar_chart.js -->
+<script>
+$(document).ready(function(){
+    var token = '{{csrf_token}}';
+
+    $.ajax({
+        headers: { "X-CSRFToken": token },
+        url: "{% url 'HomeApp:dashboard_total_upcoming_container_ajax' %}",
+        type: "GET",
+        beforeSend: function () {
+            $("#remaining_text").val("Loading chart...");
+        },
+        success: function(response_data){
+            if (response_data['result']) {
+                $("#remaining_text").val(response_data["msg"]);
+                document.getElementById("upcoming_container_h").innerHTML = "Upcoming Containers: " + response_data["total_container"];
+                const rc = document.getElementById('upcoming_container_chart').getContext('2d');
+                const containerChart = new Chart(rc, {
+                    type: 'bar',
+                    //type: 'line',
+                    data: {
+                        labels: response_data["labels"],
+                        datasets: [{
+                            label: '# of Containers',
+                            data: response_data["data"],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                });
+                document.getElementById('remaining_text').style.display = "none";
+            }
+            else{
+                $("#remaining_text").val(response_data["msg"]);
+            }
+        },
+        error: (response_data) => {
+            $("#remaining_text").val(response_data["received_msg"]);
+        }
+    });
+});
+</script>
+
+<!-- Date select onchange -->
+<script type="text/javascript">
+    function dateChange(element){
+        console.log(element.value);
+    }
+</script>
+
+{% endblock scripts %}
+

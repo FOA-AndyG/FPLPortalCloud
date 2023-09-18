@@ -1,0 +1,107 @@
+{% load static %}
+<html>
+
+    <head>
+
+        <meta http-equiv="refresh" content="60">
+        <link rel="stylesheet" href="{% static 'home/css/dashboard.css' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    </head>
+    <body>
+
+
+        <div class="grid-container">
+            <div class="row">
+                <div id="todayDate" class="col" style="text-align:center; color:white;background-color:black;height:50px;line-height:50px;margin:3px 3px 3px 3px;font-size:30px"></div>
+            </div>
+
+            <a href="/analytics/query"></a>
+            <div class="row">
+                <div class="col blk">
+                    <div class="content">Amazon</div>
+                    <div class="content number">{{ amazon_order_complete }}/{{ amazon_order_open }}</div>
+                </div>
+                <div class="col blk">
+                    <div class="content">UPS</div>
+                    <div class="content number">{{ ups_order_complete }}/{{ ups_order_open }}</div>
+                </div>
+                <div class="col blk">
+                    <div class="content">FEDEX</div>
+                    <div class="content number">{{ fedex_order_complete }}/{{ fedex_order_open }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col blk">
+                    <div class="content">USPS</div>
+                    <div class="content number">{{ usps_order_complete }}/{{ usps_order_open }}</div>
+                </div>
+                <div class="col blk">
+                    <div class="content">ONTRACK</div>
+                    <div class="content number">{{ ontrack_order_complete }}/{{ ontrack_order_open }}</div>
+                </div>
+                <div class="col blk">
+                    <div class="content">EC</div>
+                    <div class="content number">{{ wh03_order_complete }}/{{ wh03_order_open }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col blk">
+                    <div class="content">Total SP Boxes</div>
+                    <div class="content number">{{ sp_order_complete }}/{{ sp_order_open }}</div>
+                </div>
+
+                <div class="col blk">
+                    <div class="content">LTL Boxes</div>
+                    <div class="content number">{{ ltl_order_complete }}/{{ ltl_order_open }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col blk">
+                    <div class="content">Need Scan</div>
+                    <div class="content number">{{ need_scan }}</div>
+                </div>
+                <div class="col blk">
+                    <div class="content">FedEx Scanned</div>
+                    <div class="content number">{{ fedex_scanned }}</div>
+                </div>
+
+                <div class="col blk">
+                    <div class="content">UPS Scanned</div>
+                    <div class="content number">{{ ups_scanned }}</div>
+                </div>
+            </div>
+
+        </div>
+
+    </body>
+    <script>
+        function doDate()
+        {
+            var str = "";
+
+<!--            var days = new Array("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");-->
+            var months = new Array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12");
+
+            var now = new Date();
+            var hours = now.getHours();
+            hours = hours > 9 ? hours : "0" + hours;
+            var seconds = now.getSeconds();
+            seconds = seconds > 9 ? seconds : "0" + seconds;
+            var minutes = now.getMinutes();
+            minutes = minutes > 9 ? minutes : "0" + minutes;
+
+            str += months[now.getMonth()] + "/" + now.getDate() + "/" + now.getFullYear() + " - " + hours +":" + minutes + ":" + seconds;
+            document.getElementById("todayDate").innerHTML = str;
+        }
+
+        setInterval(doDate, 1000);
+    </script>
+</html>
+
+

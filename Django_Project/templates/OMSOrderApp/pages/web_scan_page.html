@@ -1,0 +1,163 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+
+<hr class="sidebar-divider">
+
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <form method="post">
+        {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-sm-5">
+                    <input class="form-control" type="text" id="trailer_number" name="trailer_number"
+                           placeholder="Enter trailer#" required>
+                </div>
+
+                <div class="col-sm-5">
+                    <button class="btn btn-success" type="submit" id="trailer_confirm_btn" name="trailer_confirm_btn">
+                        Open trailer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <h5>Instruction: </h5>
+        <table class="table table-bordered">
+            <tr>
+                <th>Trailer#</th>
+                <th>Tracking# Start With</th>
+                <th>Check with System</th>
+            </tr>
+            <tr>
+                <td>UPST#</td>
+                <td>1Z****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>FEDEXT#</td>
+                <td>96****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>USPS</td>
+                <td>42****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>FEDEX</td>
+                <td>10**** (FedEx Next day)</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>WH03</td>
+                <td>FOAEC***</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>AMXL</td>
+                <td>TBA****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>ONTRACK</td>
+                <td>D1****</td>
+                <td>Yes</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    <div class="col-md-10">
+        <h4>Pending Trailer</h4>
+        <table class="table table-bordered main_table">
+            <thead>
+            <tr>
+                <th>Action</th>
+                {% for column in df_columns %}
+                <th>{{column}}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in open_trailers %}
+            <tr class="text-danger">
+                <td>
+                    <a class="btn btn-success" href="{% url 'OMSOrderApp:web_scan_detail_page' r.trailer_number %}">
+                        Enter
+                    </a>
+                </td>
+                <td>{{ r.trailer_number }}</td>
+                <td>{{ r.username }}</td>
+                <td>{{ r.create_date|date:'Y-m-d H:i:s'|default_if_none:""}}</td>
+                <td>{{ r.close_date|date:'Y-m-d H:i:s'|default_if_none:"" }}</td>
+                <td>{{ r.total_box|default_if_none:0}}</td>
+            </tr>
+            {% endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<hr>
+<div class="row">
+    <div class="col-md-10">
+        <h4>Closed Trailer {{today_date}}</h4>
+        <table class="table table-bordered main_table">
+            <thead>
+            <tr>
+                {% for column in df_columns %}
+                <th>{{column}}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in close_trailers %}
+            <tr class="text-danger">
+                <td>{{ r.trailer_number }}</td>
+                <td>{{ r.username }}</td>
+                <td>{{ r.create_date|date:'Y-m-d H:i:s'|default_if_none:""}}</td>
+                <td>{{ r.close_date|date:'Y-m-d H:i:s'|default_if_none:"" }}</td>
+                <td>{{ r.total_box|default_if_none:0}}</td>
+            </tr>
+            {% endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+{% endblock scripts %}
+

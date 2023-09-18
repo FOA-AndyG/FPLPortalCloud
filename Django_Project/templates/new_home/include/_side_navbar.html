@@ -1,0 +1,325 @@
+{% load static %}
+<!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/new_home_page">
+        <img src="{% static 'FPL Logo 2.png' %}" style="width: 30px; height: 30px">
+        <div class="sidebar-brand-text mx-3">FPLS <sup>{{request.session.department}}</sup></div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+
+    <!-- Nav Item - Dashboard -->
+    <li class="nav-item active">
+        <a class="nav-link" href="/new_home_page">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span></a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Order Processing
+    </div>
+
+    <!--  Access -->
+    {% if request.session.access_level == 99 or request.session.access_level == 1 %}
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+<!--            <i class="fas fa-fw fa-cog"></i>-->
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Utilities</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Order Processing:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/new_order_page">Order Import</a>
+                <a class="collapse-item" href="/OMSOrderApp/new_download_order_attachment_page">Label Generator</a>
+                <a class="collapse-item" href="/OMSOrderApp/container_detail_label_page">Container Label Generator</a>
+                <a class="collapse-item" href="/OMSOrderApp/pdf_merge_page">PDF Merge</a>
+                <a class="collapse-item" href="/OMSOrderApp/new_label_import_page">Label Import</a>
+                <a class="collapse-item" href="/OMSOrderApp/storage_fee_calculator">Storage Calculator</a>
+                <a class="collapse-item" href="/OMSOrderApp/tracking_finder">UPS & FPL Report</a>
+                <a class="collapse-item" href="/OMSOrderApp/fpl_fdw_order_process">FPL & FDW Order Process</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_page">FPL Web Scan Page</a>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="true" aria-controls="collapseUtilities">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Reports</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#scan_app_menu"
+            aria-expanded="true" aria-controls="scan_app_menu">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>ScanApp</span>
+        </a>
+        <div id="scan_app_menu" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Scan Apps:</h6>
+                <a class="collapse-item" href="/ScanApp/">Tracking Scan</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_page">Wed Scan Page</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_report">Wed Scan Report</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_checking_page">Wed Scan Checking</a>
+                <a class="collapse-item" href="/ScanApp/scan_info_import">Scan Info Import</a>
+            </div>
+        </div>
+    </li>
+
+    {% elif request.session.access_level == 2 %}
+    <!--  Accounting  -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+<!--            <i class="fas fa-fw fa-cog"></i>-->
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Utilities</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Order Processing:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/storage_fee_calculator">Storage Calculator</a>
+                <a class="collapse-item" href="/OMSOrderApp/tracking_finder">UPS & FPL Report</a>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="true" aria-controls="collapseUtilities">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Reports</span>
+        </a>
+        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Custom Reports:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/branch_order_sales_report">Order Sales Report</a>
+                <a class="collapse-item" href="/OMSOrderApp/container_report">In/Outbound Report</a>
+            </div>
+        </div>
+    </li>
+
+    {% elif request.session.access_level == 3 %}
+    <!--  Customer Service  -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+<!--            <i class="fas fa-fw fa-cog"></i>-->
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Utilities</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Order Processing:</h6>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="true" aria-controls="collapseUtilities">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Reports</span>
+        </a>
+        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Custom Reports:</h6>
+            </div>
+        </div>
+    </li>
+
+    {% elif request.session.access_level == 4 %}
+    <!--  Operations  -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+<!--            <i class="fas fa-fw fa-cog"></i>-->
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Utilities</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Order Processing:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/new_order_page">Order Import</a>
+                <a class="collapse-item" href="/OMSOrderApp/new_download_order_attachment_page">Label Generator</a>
+                <a class="collapse-item" href="/OMSOrderApp/container_detail_label_page">Container Label Generator</a>
+                <a class="collapse-item" href="/OMSOrderApp/pdf_merge_page">PDF Merge</a>
+                <a class="collapse-item" href="/OMSOrderApp/storage_fee_calculator">Storage Calculator</a>
+                <a class="collapse-item" href="/OMSOrderApp/scan_error_report">Scan Error Report</a>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="true" aria-controls="collapseUtilities">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Reports</span>
+        </a>
+        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Custom Reports:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/branch_order_sales_report">Order Sales Report</a>
+                <a class="collapse-item" href="/OMSOrderApp/container_report">In/Outbound Report</a>
+                <a class="collapse-item" href="/OMSOrderApp/scan_report">Scan Report</a>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#scan_app_menu"
+            aria-expanded="true" aria-controls="scan_app_menu">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>ScanApp</span>
+        </a>
+        <div id="scan_app_menu" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Scan Apps:</h6>
+                <a class="collapse-item" href="/ScanApp/">Tracking Scan</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_page">Wed Scan Page</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_report">Wed Scan Report</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_checking_page">Wed Scan Checking</a>
+            </div>
+        </div>
+    </li>
+
+    {% elif request.session.access_level == 5 %}
+    <!--  Purchase  -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+<!--            <i class="fas fa-fw fa-cog"></i>-->
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Utilities</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Order Processing:</h6>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="true" aria-controls="collapseUtilities">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Reports</span>
+        </a>
+        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Custom Reports:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/branch_order_sales_report">Order Sales Report</a>
+                <a class="collapse-item" href="/OMSOrderApp/fpl_direct_sale_pricing_log">Direct Sale Pricing Log</a>
+                <a class="collapse-item" href="/OMSOrderApp/container_report">In/Outbound Report</a>
+            </div>
+        </div>
+    </li>
+
+    {% elif request.session.access_level == 6 %}
+    <!--  FOAJL  -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+<!--            <i class="fas fa-fw fa-cog"></i>-->
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Utilities</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Order Processing:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/new_order_page">Order Import</a>
+                <a class="collapse-item" href="/OMSOrderApp/pdf_merge_page">PDF Merge</a>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="true" aria-controls="collapseUtilities">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Reports</span>
+        </a>
+        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Custom Reports:</h6>
+                <a class="collapse-item" href="/OMSOrderApp/branch_order_sales_report">Order Sales Report</a>
+            </div>
+        </div>
+    </li>
+
+    {% elif request.session.access_level == 7 %}
+    <!-- Scanner -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#scan_app_menu"
+            aria-expanded="true" aria-controls="scan_app_menu">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>ScanApp</span>
+        </a>
+        <div id="scan_app_menu" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Scan Apps:</h6>
+                <a class="collapse-item" href="/ScanApp/">Tracking Scan</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_page">Wed Scan Page</a>
+                <a class="collapse-item" href="/OMSOrderApp/web_scan_checking_page">Wed Scan Checking</a>
+            </div>
+        </div>
+    </li>
+
+    {% else %}
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+            aria-expanded="true" aria-controls="collapseTwo">
+<!--            <i class="fas fa-fw fa-cog"></i>-->
+            <i class="fas fa-fw fa-wrench"></i>
+            <span>Utilities</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Order Processing:</h6>
+            </div>
+        </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="true" aria-controls="collapseUtilities">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Reports</span>
+        </a>
+        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Custom Reports:</h6>
+            </div>
+        </div>
+    </li>
+    {% endif %}
+<!--  End  -->
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+    <!-- Sidebar Message -->
+<!--    <div class="sidebar-card d-none d-lg-flex">-->
+<!--        <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="...">-->
+<!--        <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>-->
+<!--        <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>-->
+<!--    </div>-->
+
+</ul>
+<!-- End of Sidebar -->

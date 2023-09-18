@@ -1,0 +1,83 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr>
+<!--TRACKING compare -->
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-2">
+            <label>Select New Picking List: </label>
+            <select class="form-control" name="search_list" required onmousedown="if(this.options.length>8){this.size=8;}"  onchange='this.size=0;' onblur="this.size=0;">
+                <option value="" disabled selected>Picking list</option>
+                {% for picking in overall_picking_list %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+                {% for picking in picking_list %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-info btn-block short_loading" type="submit" name="claim_btn" id="claim_btn">
+                <i class="fa fa-download"></i> Claim
+            </button>
+        </div>
+    </div>
+</form>
+<br>
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    $('body').keypress(function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            $("#generate_btn").click();
+        }
+    });
+
+    $('.short_loading').on('click', function() {
+        var $this = $(this);
+        var loadingText = '<i class="fas fa-sync fa-spin"></i> Loading...';
+        if ($(this).html() !== loadingText) {
+          $this.disabled = true;
+          $this.data('original-text', $(this).html());
+          $this.html(loadingText);
+        }
+        setTimeout(function() {
+          $this.html($this.data('original-text'));
+        }, 10000);
+    });
+});
+
+</script>
+{% endblock scripts %}
+

@@ -1,0 +1,143 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        {% include 'OMSOrderApp/parts/new_picking_list_table.html' with df=picking_df %}
+    </div>
+</div>
+
+<hr class="sidebar-divider">
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-sm-3">
+                    <label>Select: </label>
+                    <select class="form-control" name="picking_select" id="picking">
+                        <option disabled selected value="">Select Picking</option>
+                        {% for r in picking_list %}
+                        <option value="{{r}}">{{r}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-sm-3">
+                    <label style="visibility:hidden">click</label>
+                    <button class="btn btn-success btn-block loading" type="submit" name="generate_btn"
+                            data-loading-text="<i class='fas fa-sync fa-spin'></i> Generating...">
+                        Generate PDF file
+                    </button>
+                </div>
+
+                <div class="col-sm-3">
+                    <label style="visibility:hidden">click</label>
+                    <button class="btn btn-success btn-block" type="button" name="export_btn"
+                            id="export_btn">
+                        Export Picking Detail
+                    </button>
+                </div>
+            </div>
+
+            <hr class="sidebar-divider">
+
+            <div class="row">
+                <div class="col-sm-4">
+                    <label>Result Message: </label>
+                    {% if "Error" in msg %}
+                    <textarea class="form-control text-danger" readonly rows="5">{{msg}}</textarea>
+                    {% else %}
+                    <textarea class="form-control text-success" readonly rows="5">{{msg}}</textarea>
+                    {% endif %}
+                </div>
+
+                <div class="col-sm-2">
+                    <label style="visibility:hidden">click</label>
+                    <a class="btn btn-primary btn-block" download href="{% static '' %}{{download_path}}">
+                        <i class="fa fa-download"></i> Download file
+                    </a>
+                </div>
+
+                {% if miss_list %}
+                <div class="col-sm-3">
+                    <label class="text-danger">Order: Missing labels</label>
+                    <textarea class="form-control text-danger" readonly rows="5">{% for order in miss_list %}{{order}}
+                        {% endfor %}
+                    </textarea>
+                </div>
+                {% endif %}
+
+                {% if wrong_label_list %}
+                <div class="col-sm-3">
+                    <label class="text-danger">Order: Wrong labels</label>
+                    <textarea class="form-control text-danger" readonly rows="5">{% for order in wrong_label_list %}{{order}}
+                        {% endfor %}</textarea>
+                </div>
+                {% endif %}
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<script type="text/javascript">
+$(document).ready(function(){
+    $("#export_btn").click(function(){
+        var token = '{{csrf_token}}';
+        var picking = $('#picking').val();
+        var btn = document.getElementById("export_btn");
+        if (picking === ""){
+            alert("Picking list cannot be empty");
+        }
+        else{
+            $.ajax({
+                headers: { "X-CSRFToken": token },
+                url: "{% url 'OMSOrderApp:picking_detail_download_ajax' %}",
+                type: "POST",
+                data: {picking_select: picking},
+                beforeSend: function () {
+                    btn.innerHTML = "Exporting...";
+                },
+                success: function(response_data){
+                    if (response_data['ajax_result']) {
+                        btn.innerHTML = "Export Picking Detail";
+                        var download_link = document.createElement('a');
+                        download_link.setAttribute('href', "{% static '' %}"+response_data['detail_download_path']);
+                        download_link.setAttribute('download', picking+"_details");
+                        download_link.setAttribute('style', 'display:none;');
+                        document.body.appendChild(download_link);
+
+                        download_link.click();
+                        download_link.remove();
+                    }
+                    else{
+                        btn.innerHTML = response_data["ajax_msg"];
+                    }
+                },
+                error: (response_data) => {
+                    btn.innerHTML = response_data["ajax_msg"];
+                }
+            });
+        }
+    });
+});
+
+</script>
+{% endblock scripts %}
+

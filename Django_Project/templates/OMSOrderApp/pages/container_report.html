@@ -1,0 +1,48 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+<hr>
+
+<!-- Content Row -->
+<div class="row">
+    <form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+        <div class="row">
+            <div class="col-sm">
+                <label>Start Date:</label>
+                <input class="form-control" name="start_date" required type="date">
+            </div>
+            <div class="col-sm">
+                <label>End Date:</label>
+                <input class="form-control" name="end_date" required type="date">
+            </div>
+            <div class="col-sm">
+                <label style="visibility:hidden">click</label>
+                <button class="btn btn-info btn-block short_loading" type="submit" name="confirm_btn">
+                    <i class="fa fa-download"></i> Confirm
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<hr>
+
+<div class="row">
+    <!-- Content Column -->
+    {% include 'OMSOrderApp/parts/container_volume_table.html' with df=table_df %}
+</div>
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+{% endblock scripts %}
+

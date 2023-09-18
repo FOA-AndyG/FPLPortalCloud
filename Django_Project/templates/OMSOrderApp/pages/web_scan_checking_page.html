@@ -1,0 +1,97 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr class="sidebar-divider">
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-10">
+            <div class="form-group row">
+                <div class="col-sm-2">
+                    <select class="form-control" id="select_input" name="select_input">
+                        <option value="Picking">Picking#</option>
+                        <option value="Tracking">Tracking#</option>
+                        <option value="SKU">SKU#</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-4">
+                    <input class="form-control" id="tracking_input" name="tracking_input" type="text" required>
+                </div>
+                <div class="col-sm-2">
+                    <input class="form-control btn btn-success" id="tracking_submit" name="tracking_submit"
+                           type="submit" value="Enter">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<hr>
+
+<div class="row">
+    <div class="col-md-10">
+        <table class="table table-bordered main_table">
+            <thead>
+            <tr>
+                {% for column in display_columns %}
+                <th>{{column}}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for i, r in display_df.iterrows %}
+            <tr>
+                <td>{{ r.picking_code }}</td>
+                <td>{{ r.order_code }}</td>
+                <td>{{ r.product_barcode }}</td>
+                <td>{{ r.parcel_quantity }}</td>
+                <td>{{ r.tracking_number }}</td>
+                <td>{{ r.multiple_tracking_number}}</td>
+            </tr>
+            {% endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    document.querySelector('#tracking_input').focus();
+    document.querySelector('#tracking_input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#tracking_submit').click();
+        }
+    };
+});
+
+</script>
+{% endblock scripts %}
+

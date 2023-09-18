@@ -1,0 +1,92 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block content %}
+<title>{{title}}</title>
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <div class="form-group row">
+            <div class="col-sm-4">
+                <h4>Please enter Trailer# to start scan: </h4>
+                <input class="form-control" id="trailer_number" type="text" placeholder="Trailer#">
+            </div>
+            <div class="col-sm-2">
+                <h4 style="visibility:hidden">x</h4>
+                <input class="form-control" id="trailer_submit" type="button" value="Enter">
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr>
+<h3>Please use the this link for Scan App: http://192.168.167.88:8080</h3>
+<hr>
+<div class="row">
+    <div class="col-md-10">
+        <h5>Instruction: </h5>
+        <table class="table table-bordered">
+            <tr>
+                <th>Trailer#</th>
+                <th>Tracking# Start With</th>
+                <th>Check with System</th>
+            </tr>
+            <tr>
+                <td>UPST#</td>
+                <td>1Z****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>FEDEXT#</td>
+                <td>96****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>USPS</td>
+                <td>42****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>FEDEX</td>
+                <td>10**** (FedEx Next day)</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>WH03</td>
+                <td>FOAEC***</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>AMXL</td>
+                <td>TBA****</td>
+                <td>Yes</td>
+            </tr>
+            <tr>
+                <td>ONTRACK</td>
+                <td>D1****</td>
+                <td>Yes</td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<script>
+    document.querySelector('#trailer_number').focus();
+    document.querySelector('#trailer_number').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#trailer_submit').click();
+        }
+    };
+
+    document.querySelector('#trailer_submit').onclick = function(e) {
+        var trailer_number = document.querySelector('#trailer_number').value;
+        window.location.pathname = '/ScanApp/' + trailer_number + '/';
+    };
+
+</script>
+{% endblock scripts %}

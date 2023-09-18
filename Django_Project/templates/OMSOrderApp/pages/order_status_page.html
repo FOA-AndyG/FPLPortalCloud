@@ -1,0 +1,85 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        {% include 'OMSOrderApp/parts/new_picking_list_table.html' with df=picking_df %}
+    </div>
+</div>
+
+<hr class="sidebar-divider">
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <form method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-4">
+                <label>Select: </label>
+                <select class="form-control" name="picking_select">
+                    <option disabled selected value="">Select Picking</option>
+                    {% for r in picking_list %}
+                    <option value="{{r}}">{{r}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm-3">
+                <label style="visibility:hidden">click</label>
+                <button class="btn btn-success btn-block loading" type="submit" name="generate_btn"
+                data-loading-text="<i class='fas fa-sync fa-spin'></i> Generating...">
+                    Generate PDF file
+                </button>
+            </div>
+
+            {% if miss_list %}
+            <div class="col-sm-3">
+                <label class="text-danger">Order: Missing labels</label>
+                <select class="form-control">
+                    {% for order in miss_list %}
+                    <option>{{order}}</option>
+                    {% endfor%}
+                </select>
+            </div>
+            {% endif %}
+
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-sm-4">
+                <label>Result Message: </label>
+                {% if "Error" in msg %}
+                <textarea class="form-control text-danger" readonly rows="5">{{msg}}</textarea>
+                {% else %}
+                <textarea class="form-control text-success" readonly rows="5">{{msg}}</textarea>
+                {% endif %}
+            </div>
+            <div class="col-sm-3">
+                <label style="visibility:hidden">click</label>
+                <a class="btn btn-primary btn-block" download href="{% static '' %}{{download_path}}">
+                    <i class="fa fa-download"></i> Download file
+                </a>
+            </div>
+        </div>
+
+    </form>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+{% endblock scripts %}
+

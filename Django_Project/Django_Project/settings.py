@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Andy
+    'Django_apps.HomeApp',
+    'Django_apps.OMSOrderApp',
 ]
 
 MIDDLEWARE = [
@@ -82,6 +85,14 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
     },
+    'ecmysql': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'wms',
+        'USER': 'edi',
+        'PASSWORD': 'A!05FOA2021edi',
+        'HOST': '34.96.174.105',
+        'PORT': '3306',
+    },
 }
 
 
@@ -122,14 +133,14 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, "static"),
-# ]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 
 # apply my local setting
 try:

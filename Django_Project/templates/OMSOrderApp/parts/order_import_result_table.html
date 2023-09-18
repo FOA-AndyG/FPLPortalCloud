@@ -1,0 +1,58 @@
+
+<div class="tab">
+{% for tab in tab_list %}
+    <button class="tablinks" onclick="openTab(event, '{{tab}}')">{{tab}}</button>
+{% endfor %}
+</div>
+
+{% for tab in tab_list %}
+<div class="tabcontent" id="{{tab}}">
+        <table cellspacing="0" class="table table-striped cell-border main_table">
+            <thead>
+                <tr>
+                    <th>导入编号</th>
+                    <th>OMS订单号</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if tab == "Success Order" %}
+                {% for i, r in success_df.iterrows %}
+                <tr>
+                    <td>{{ r.导入编号 }}</td>
+                    <td>{{ r.order_code }}</td>
+                </tr>
+                {% endfor%}
+            {% elif tab == "Error Order" %}
+                {% for i, r in error_df.iterrows %}
+                <tr>
+                    <td>{{ r.导入编号 }}</td>
+                    <td>{{ r.ErrorMessage }}</td>
+                </tr>
+                {% endfor%}
+            {% else %}
+                {% for i, r in error_product_df.iterrows %}
+                <tr>
+                    <td>{{ r.导入编号 }}</td>
+                    <td>{{ r.ErrorMessage }}</td>
+                </tr>
+                {% endfor%}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+{% endfor %}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+         $('table.main_table').DataTable({
+            autoWidth: true,
+            order: [0, "asc"],
+            dom: 'Bfrtip',
+            lengthMenu: [[ 10, 20, 50, -1], [ '10 rows', '20 rows', '50 rows', 'Show all' ]],
+            buttons: [
+            {extend:'pageLength', className: 'btn btn-default'},
+            ]
+         });
+    });
+</script>

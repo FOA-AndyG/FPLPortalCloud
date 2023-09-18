@@ -1,0 +1,24 @@
+:root{
+  
+    --color-bg: #E9ECEF;
+    --color-on-bg: #77607C;
+  
+    --color-surface1: white;
+    --color-on-surface1: #495057;
+  
+    --color-surface2: #CED4DA;
+    --color-on-surface2: #495057;
+  
+    --color-accent1:#6743ED;
+    --color-accent1-light: #7A7BB8;
+    --color-accent1-lighter: #AFB0D4;
+    --color-accent1-lightest: #CFD0FF;
+    --color-on-accent1: #F8F9FA;
+    --color-on-accent1-light: #F8F9FA;
+  
+    --color-accent2: #DE6E4B;
+    --color-accent2-dark: #CD4D25;
+    --color-accent2-darker: #B14220;
+    --color-on-accent2: #F8F9FA;
+  
+  }

@@ -1,0 +1,95 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        {% include 'OMSOrderApp/parts/new_container_detail_table.html' with df=table_df %}
+    </div>
+</div>
+
+<hr class="sidebar-divider">
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <form method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-3">
+                <label>Receiving No: </label>
+                <input class="form-control" name="receiving_input" id="receiving_input" type="text"
+                       required
+                       placeholder="Enter Receiving Code:">
+            </div>
+            <div class="col-sm-3">
+                <label>Number of Pallets:</label>
+                <input class="form-control" name="number_input" type="number" min="1" max="30" step="1"
+                       value="25"
+                       onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                       placeholder="Number:">
+            </div>
+            <div class="col-sm-3">
+                <label style="visibility:hidden">click</label>
+                <button class="btn btn-success btn-block loading" type="submit" name="generate_btn"
+                data-loading-text="<i class='fas fa-sync fa-spin'></i> Generating...">
+                    Generate PDF file
+                </button>
+            </div>
+
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-sm-5">
+                <label>Result Message: </label>
+                {% if "Error" in msg %}
+                <textarea class="form-control text-danger" readonly rows="5">{{msg}}</textarea>
+                {% else %}
+                <textarea class="form-control text-success" readonly rows="5">{{msg}}</textarea>
+                {% endif %}
+            </div>
+            <div class="col-sm-3">
+                <label style="visibility:hidden">click</label>
+                <a class="btn btn-primary btn-block" download href="{% static '' %}{{download_path}}">
+                    <i class="fa fa-download"></i> Download file
+                </a>
+            </div>
+        </div>
+
+    </form>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<!-- for auto complete -->
+<script type="text/javascript">
+$(function () {
+    var available_list = {{table_list|safe}};
+    $("#receiving_input").autocomplete({
+        source: available_list,
+        minLength: 3,
+        maxResults: 5,
+        change: function(event, data) {
+            event.preventDefault();
+            if (!data.item) {
+                $("#receiving_input").val("");
+            }
+        }
+    });
+});
+</script>
+<!--    End of auto complete   -->
+{% endblock scripts %}
+

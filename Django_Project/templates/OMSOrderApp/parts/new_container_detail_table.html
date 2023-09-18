@@ -1,0 +1,55 @@
+<!-- Begin datatable Content -->
+<div class="container-fluid">
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold">{{df_title}}</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered main_table" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        {% for column in df_columns %}
+                        <th>{{column}}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        {% for column in df_columns %}
+                        <th>{{column}}</th>
+                        {% endfor %}
+                    </tr>
+                    </tfoot>
+
+                    <tbody>
+                    {% for i, r in df.iterrows %}
+                    <tr>
+                        <td>{{ r.receiving_code}}</td>
+                        <td>{{ r.tracking_number }}</td>
+                        <td>{{ r.customer_code }}</td>
+                        <td>
+                            {% if r.container_type == 1 %}
+                            20GP
+                            {% elif r.container_type == 2 %}
+                            40GP
+                            {% elif r.container_type == 3 %}
+                            40HQ
+                            {% elif r.container_type == 4 %}
+                            45GP
+                            {% elif r.container_type == 5 %}
+                            45HQ
+                            {% else %}
+                            Return/Adjustment
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor%}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.container-fluid -->

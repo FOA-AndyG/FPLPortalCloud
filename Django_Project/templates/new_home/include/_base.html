@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{title}}</title>
+
+    <!-- for icon -->
+    <link href="{% static 'FPL Logo 2.png' %}" rel="icon">
+
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'sb_admin_temp/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="{% static 'sb_admin_temp/css/sb-admin-2.min.css' %}" rel="stylesheet">
+
+    <!-- for auto complete -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+    <style>
+        .ui-autocomplete { max-height: 200px; overflow-y: auto; overflow-x: hidden;}
+    </style>
+    {% block stylesheets %}
+    {% endblock stylesheets %}
+
+</head>
+
+<body id="page-top">
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+        <!-- Sidebar -->
+        {% include 'new_home/include/_side_navbar_new.html' %}
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <!-- Main Content -->
+            <div id="content">
+                <!-- Topbar -->
+                {% include 'new_home/include/_top_bar.html' %}
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+                    {% include 'new_home/include/_page_head.html' %}
+
+                    <!-- Content -->
+                    {% block content %}
+
+                    {% endblock content %}
+
+                </div>
+                <!-- /.container-fluid -->
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            {% include 'new_home/include/_footer.html' %}
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{% static 'sb_admin_temp/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'sb_admin_temp/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{% static 'sb_admin_temp/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static 'sb_admin_temp/js/sb-admin-2.min.js' %}"></script>
+
+    <!-- for auto complete -->
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+
+    {% include 'new_home/include/_datatables.html' %}
+
+    <!-- JavaScript for loading button spinner -->
+    <script type="text/javascript">
+    $('.loading').on('click', function() {
+        //console.log(66);
+        var $this = $(this);
+        var loadingText = '<i class="fas fa-sync fa-spin"></i> Loading...';
+        if ($(this).html() !== loadingText) {
+          $this.disabled = true;
+          $this.data('original-text', $(this).html());
+          $this.html(loadingText);
+        }
+        setTimeout(function() {
+          $this.html($this.data('original-text'));
+        }, 600000);
+    });
+    </script>
+    <!-- JavaScript -->
+
+{% block scripts %}
+
+{% endblock scripts %}
+
+<!-- extra JavaScript -->
+{% block extrascripts %}
+
+{% endblock extrascripts %}
+
+
+</body>
+
+</html>

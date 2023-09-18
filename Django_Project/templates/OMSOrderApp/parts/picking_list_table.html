@@ -1,0 +1,41 @@
+
+<div class="tab">
+    <button class="tablinks active" onclick="openTab(event, '{{picking_tab}}')">{{picking_tab}}</button>
+</div>
+
+<div class="tabcontent" id="{{picking_tab}}" style="display:block">
+        <table cellspacing="0" class="table table-striped cell-border main_table">
+            <thead>
+                <tr>
+                    <th>拣货单号/Picking No</th>
+                    <th>订单总数/Order Qty</th>
+                    <th>产品总数/Product Qty</th>
+                    <th>库位总数/Total Bin Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for i, r in picking_df.iterrows %}
+            <tr>
+                <td>{{ r.picking_code }}</td>
+                <td>{{ r.picking_order_cnt }}</td>
+                <td>{{ r.picking_item_cnt }}</td>
+                <td>{{ r.picking_lc_cnt }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+         $('table.main_table').DataTable({
+            autoWidth: true,
+            order: [0, "desc"],
+            dom: 'Bfrtip',
+            lengthMenu: [[ 10, 20, 50, -1], [ '10 rows', '20 rows', '50 rows', 'Show all' ]],
+            buttons: [
+            {extend:'pageLength', className: 'btn btn-default'},
+            ]
+         });
+    });
+</script>

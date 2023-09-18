@@ -1,0 +1,110 @@
+{% extends 'home/include/_base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'home/include/_home_navbar.html' %}
+{% include 'home/include/_card.html' %}
+{% include 'home/include/_header.html' %}
+
+<title>Home</title>
+
+<div class="container" style="width: auto; min-height: 100%;">
+    <div class="card_row">
+        <div class="card_column">
+            <div class="my_card">
+                <h3 style="color:#edb142">Welcome {{user.fullname}} !</h3>
+                <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                <div id="factDisplay">
+                </div>
+            </div>
+        </div>
+        <div class="card_column">
+            <div class="my_card">
+                <h3 style="color:#edb142">Slow the Spread of COVID-19</h3>
+                <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                <ul>
+                    <li>Physically Distance yourself from others (6ft)</li>
+                    <li>Wear a face covering at all times</li>
+                    <li>Wash your hands frequently for 20 seconds</li>
+                    <li>Disinfect your work station frequently</li>
+                    <li>Stay home if you are sick</li>
+                    <li>Monitor your temperature (Ask HR)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+
+<!-- Header -->
+<div class="slideshow-container" style="margin-top: -7px;">
+    <div class="mySlides fade">
+        <div class="numbertext">1 / 3</div>
+        <img src="{% static 'img/header_3.jpg' %}" style="width:100%">
+        <div class="text">Be part of something special</div>
+    </div>
+
+    <div class="mySlides fade">
+        <div class="numbertext">2 / 3</div>
+        <img src="{% static 'img/header_2.jpg' %}" style="width:100%">
+        <div class="text">Be part of something special</div>
+    </div>
+
+    <div class="mySlides fade">
+        <div class="numbertext">3 / 3</div>
+        <img src="{% static 'img/header_1.jpeg' %}" style="width:100%">
+        <div class="text">Be part of something special</div>
+    </div>
+
+</div>
+<div style="text-align:center">
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+</div>
+
+
+{% include 'home/include/_footer.html' %}
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<script>
+var slideIndex = 0;
+showSlides();
+
+function showSlides() {
+  var i;
+  var slides = document.getElementsByClassName("mySlides");
+  var dots = document.getElementsByClassName("dot");
+  for (i = 0; i < slides.length; i++) {
+    slides[i].style.display = "none";
+  }
+  slideIndex++;
+  if (slideIndex > slides.length) {slideIndex = 1}
+  for (i = 0; i < dots.length; i++) {
+    dots[i].className = dots[i].className.replace(" active", "");
+  }
+  slides[slideIndex-1].style.display = "block";
+  dots[slideIndex-1].className += " active";
+  setTimeout(showSlides, 5000); // Change image every 2 seconds
+}
+</script>
+<!-- Script for display random messages -->
+<script type="text/javascript">
+(function newFact() {
+  var facts = [
+  "The secret of getting ahead is getting started. – Mark Twain",
+  "Do not limit yourself. Many people limit themselves to what they think they can do. You can go as far as your mind lets you. What you believe, remember, you can achieve. – Mary Kay Ash",
+  "I wake up every morning and think to myself, 'how far can I push this company in the next 24 hours.' – Leah Busque",
+  "You’ve gotta dance like there’s nobody watching, love like you’ll never be hurt, sing like there’s nobody listening, and live like it’s heaven on earth. ― William W. Purkey",
+  "Everyone has inside them a piece of good news. The good news is you don’t know how great you can be! How much you can love! What you can accomplish! And what your potential is. - Anne Frank",
+  "The Best Way To Get Started Is To Quit Talking And Begin Doing. – Walt Disney",
+  "The Pessimist Sees Difficulty In Every Opportunity. The Optimist Sees Opportunity In Every Difficulty. – Winston Churchill",
+  "Don’t Let Yesterday Take Up Too Much Of Today. – Will Rogers"
+  ];
+  var randomFact = Math.floor(Math.random() * facts.length);
+  document.getElementById('factDisplay').innerHTML = facts[randomFact];
+})();
+</script>
+{% endblock scripts %}

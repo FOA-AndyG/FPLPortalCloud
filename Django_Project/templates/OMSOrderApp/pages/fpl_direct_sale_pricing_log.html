@@ -1,0 +1,188 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr>
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <form enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-sm-6">
+                    <label><b>Import SKU & PRICE:</b></label>
+                    <input class="form-control" name="import_file_path" required type="file">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-block short_loading" name="import_btn" type="submit"
+                            data-loading-text="<i class='fas fa-sync fa-spin'></i> Importing...">
+                        <i class="fas fa-cloud-upload-alt"></i> Import
+                    </button>
+                </div>
+                <div class="col-sm-4">
+                    <a class="btn btn-block btn-info" download
+                       href="{{template_download_path}}">
+                        <i class="fas fa-cloud-download-alt"></i> Download file template/下载订单导入模板
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <label>
+            <b>Search / Export:</b>
+        </label>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-sm-2">
+                    <input class="form-control" type="text" name="search_text" placeholder="Enter Sku to search">
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-success btn-block short_loading" name="search_btn" type="submit"
+                            data-loading-text="<i class='fas fa-sync fa-spin'></i> Searching..."
+                            data-toggle="tooltip" data-placement="top"
+                            title="Enter empty to search latest 500 records">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-info btn-block" name="export_btn" id="export_btn" type="button"
+                            style="display:none;"
+                            data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting...">
+                        <i class="fas fa-cloud-download-alt"></i> Export Current Table
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<hr>
+<!-- Content Row -->
+<div class="row">
+    <!-- Begin datatable Content -->
+    <div class="container-fluid">
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold">{{df_title}}</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered report_table" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tfoot>
+                        <tr>
+                            {% for column in display_columns %}
+                            <th>{{column}}</th>
+                            {% endfor %}
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        {% for d in display_data %}
+                        <tr>
+                            <td>{{ d.sku }}</td>
+                            <td>{{ d.price }}</td>
+                            <td>{{ d.updated_date|date:'m/d/Y H:i:s' }}</td>
+                            <td>{{ d.username}}</td>
+                        </tr>
+                        {% endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+</div>
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    });
+
+    $('.short_loading').on('click', function() {
+        var $this = $(this);
+        var loadingText = '<i class="fas fa-sync fa-spin"></i> Loading...';
+        if ($(this).html() !== loadingText) {
+          $this.disabled = true;
+          $this.data('original-text', $(this).html());
+          $this.html(loadingText);
+        }
+        setTimeout(function() {
+          $this.html($this.data('original-text'));
+        }, 5000);
+    });
+
+    $("#export_btn").click(function(){
+        var token = '{{csrf_token}}';
+        var btn = document.getElementById("export_btn");
+
+        var dataframe = JSON.parse("{{display_data|escapejs}}");
+
+        $.ajax({
+            headers: { "X-CSRFToken": token },
+            url: "{% url 'OMSOrderApp:fpl_direct_sale_pricing_log' %}",
+            type: "POST",
+            //data: {dataframe: dataframe},
+            data: {dataframe: JSON.stringify(dataframe)},
+            beforeSend: function () {
+                    btn.innerHTML = "Exporting";
+                },
+            success: function(response_data){
+                if (response_data['result']) {
+                    $("#searchResultText").val(response_data["msg"]);
+                    $("#itemHeightText").val(response_data["height"]);
+                    $("#itemLengthText").val(response_data["length"]);
+                    $("#itemWidthText").val(response_data["width"]);
+                    $("#itemWeightText").val(response_data["weight"]);
+                }
+                else{
+                    $("#searchResultText").val(response_data["msg"]);
+                }
+            },
+        });
+    });
+});
+</script>
+{% endblock scripts %}
+

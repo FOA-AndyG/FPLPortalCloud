@@ -1,0 +1,51 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block content %}
+<title>{{title}}</title>
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <form enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-sm-4">
+                    <label>Upload PDFs into one: </label>
+                    <input class="form-control" type="file" name="upload" accept="application/pdf" multiple />
+                </div>
+                <div class="col-sm-2">
+                    <label style="visibility:hidden">x</label>
+                    <button type="submit" class="btn btn-success btn-block loading" name="merge_btn"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Importing..."
+                    >
+                        Merge
+                    </button>
+                </div>
+            </div>
+            <br>
+            <div class="form-group row">
+                <div class="col-sm-4">
+                    <label>Result Message: </label>
+                    <input class="form-control" name="result_input" value="{{result_msg}}" readonly>
+                </div>
+                <div class="col-sm-2">
+                    <label style="visibility:hidden">x</label>
+                    <a class="btn btn-primary btn-block" download href="{% static '' %}{{download_path}}">
+                        Download
+                    </a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+{% endblock scripts %}

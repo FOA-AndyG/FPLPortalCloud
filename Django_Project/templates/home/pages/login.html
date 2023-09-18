@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+
+    <link href="{% static 'el_icon.png' %}" rel="icon">
+
+    <!--===============================================================================================-->
+    <link href="{% static 'login_temp/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+    <!--===============================================================================================-->
+    <link href="{% static 'login_temp/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}" rel="stylesheet"
+          type="text/css">
+    <!--===============================================================================================-->
+    <link href="{% static 'login_temp/vendor/animate/animate.css' %}" rel="stylesheet" type="text/css">
+    <!--===============================================================================================-->
+    <link href="{% static 'login_temp/vendor/css-hamburgers/hamburgers.min.css' %}" rel="stylesheet" type="text/css">
+    <!--===============================================================================================-->
+    <link href="{% static 'login_temp/vendor/select2/select2.min.css' %}" rel="stylesheet" type="text/css">
+    <!--===============================================================================================-->
+    <link href="{% static 'login_temp/css/util.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'login_temp/css/main.css' %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+<div class="limiter">
+    <div class="container-login100">
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-warning messages" role="alert">
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="wrap-login100">
+            <div class="login100-pic js-tilt" data-tilt>
+                <img alt="IMG" src="{% static 'FPL Logo 2.png' %}" width="500" height="300">
+            </div>
+
+            <form class="login100-form validate-form" method="post">
+                {% csrf_token %}
+                <span class="login100-form-title">
+                    {{title}}
+                    <hr>
+                    <h6>Member Login</h6>
+					</span>
+
+                <div class="wrap-input100 validate-input" data-validate="Valid email is required: ex@abc.xyz">
+                    <input class="input100" name="username" placeholder="Username" type="text">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i aria-hidden="true" class="fa fa-user"></i>
+						</span>
+                </div>
+
+                <div class="wrap-input100 validate-input" data-validate="Password is required">
+                    <input class="input100" name="password" placeholder="Password" type="password">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i aria-hidden="true" class="fa fa-lock"></i>
+						</span>
+                </div>
+
+<!--                <div class="container-login100-form-checkbox">-->
+<!--                    <label>-->
+<!--                        <input type="checkbox" class="login100-form-checkbox" name="remember_cb"> Remember me-->
+<!--                    </label>-->
+<!--                </div>-->
+
+                <div class="container-login100-form-btn">
+                    <button class="login100-form-btn" name="login_button" type="submit">
+                        Login
+                    </button>
+                </div>
+
+                <div class="text-center p-t-136">
+                    <p>
+                        {{footer}}
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!--===============================================================================================-->
+<script src="{% static 'login_temp/vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'login_temp/vendor/bootstrap/js/popper.js' %}"></script>
+<script src="{% static 'login_temp/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'login_temp/vendor/select2/select2.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'login_temp/vendor/tilt/tilt.jquery.min.js' %}"></script>
+<script>
+		$('.js-tilt').tilt({
+			scale: 1.1
+		})
+</script>
+<script type="text/javascript">
+    setTimeout(function() {
+        $('.messages').fadeOut('slow');
+    }, 5000); // <-- time in milliseconds
+</script>
+<!--===============================================================================================-->
+<script src="{% static 'login_temp/js/main.js' %}"></script>
+
+</body>
+</html>

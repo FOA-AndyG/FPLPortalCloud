@@ -1,0 +1,74 @@
+{% extends 'OMSOrderApp/include/_base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'OMSOrderApp/include/_datatables.html' %}
+{% include 'OMSOrderApp/include/_tab.html' %}
+
+{% include 'OMSOrderApp/include/_home_navbar.html' %}
+
+<title>{{title}}</title>
+
+<div class="container" style="width: auto; min-height: 100%;">
+
+
+    {% include 'OMSOrderApp/parts/picking_list_table.html' %}
+
+    <hr>
+    <form enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-sm-2">
+                <label>Select: </label>
+                <select class="form-control" name="picking_select">
+                    <option disabled selected value="">Select Picking</option>
+                    {% for r in picking_list %}
+                    <option value="{{r}}">{{r}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <label style="visibility:hidden">click</label>
+                <button class="btn btn-success btn-block loading" type="submit" name="generate_btn"
+                data-loading-text="<i class='fas fa-sync fa-spin'></i> Generating..."
+                >
+                        Generate PDF file
+                </button>
+            </div>
+            {% if miss_list %}
+            <div class="col-sm-3">
+                <label>Order: Missing labels</label>
+                <select class="form-control">
+                    {% for order in miss_list %}
+                    <option>{{order}}</option>
+                    {% endfor%}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-sm-3">
+                <label>Result Message: </label>
+                <textarea class="form-control" readonly rows="5">{{msg}}</textarea>
+            </div>
+            <div class="col-sm-1">
+                <label style="visibility:hidden">click</label>
+                <a class="btn btn-success btn-block" download href="{% static '' %}{{download_path}}">
+                    Download
+                </a>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+
+{% endblock scripts %}
