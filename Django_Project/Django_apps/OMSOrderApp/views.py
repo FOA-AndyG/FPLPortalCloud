@@ -7,7 +7,8 @@ from django.shortcuts import render, redirect
 import json
 
 # Create your views here.
-from Django_apps.HomeApp.functions.session_function import check_login_status, get_session_user, get_client_ip
+from Django_apps.HomeApp.functions.session_function import check_login_status, get_session_user, get_client_ip, \
+    get_session_user_location
 from Django_apps.OMSOrderApp.export_function.download_attachment import get_picking_list_no_db
 
 from Django_apps.OMSOrderApp.picking_functions.scan_support_functions import *
@@ -72,24 +73,27 @@ def web_scan_page(request):
     print("web_scan_page")
     if not check_login_status(request):
         return redirect("HomeApp:login")
+    username = get_session_user_username(request)
+    location = get_session_user_location(request)
 
     # open a trailer
     if request.method == "POST" and 'trailer_confirm_btn' in request.POST:
         trailer_number = request.POST.get("trailer_number")
-        username = get_session_user_username(request)
         create_date = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
         try:
-            create_trailer(trailer_number, username, create_date)
+            create_trailer(trailer_number, username, create_date, location)
             return redirect('OMSOrderApp:web_scan_detail_page', trailer_number=trailer_number)
         except Exception as e:
             messages.warning(request, str(e))
     today_date = datetime.strftime(datetime.now(), '%Y-%m-%d')
-    open_trailers = get_trailer_data(status=0)
-    close_trailers = get_close_trailer_data(today_date)
+    open_trailers = get_trailer_data(status=0, location=location)
+    # close_trailers = get_close_trailer_data(today_date)
+    close_trailers = get_trailer_data(status=1, location=location, close_date=today_date)
+
     content = {
         "title": "FPL Web Scan Page",
-        "page_head": "FPL Web Scan Page",
+        "page_head": f"Web Scan Page - {location}",
         "df_columns": ['Trailer#', 'Creator', 'Open Date', 'Close Date', 'Total Box#'],
         "open_trailers": open_trailers,
         "close_trailers": close_trailers,
@@ -124,11 +128,11 @@ def web_scan_detail_page(request, trailer_number):
 
 def web_scan_function(request):
     print("web_scan_function")
-
+    username = get_session_user_username(request)
+    location = get_session_user_location(request)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == "POST":
         trailer_number = request.POST.get("trailer_number")
         tracking_input = request.POST.get("tracking_input")
-        username = request.POST.get("username")
         isCheck = request.POST.get("isCheck")
         print(username, trailer_number, tracking_input, isCheck)
 
@@ -165,7 +169,7 @@ def web_scan_function(request):
             if is_pass_check:
                 print("save scan record")
                 # skip check with Ecang orders
-                save_tracking_detail_skip(trailer_number, carrier, label_tracking, username, isCheck)
+                save_tracking_detail_skip(trailer_number, carrier, label_tracking, username, isCheck, location)
                 content = {
                     "result": True,
                     "message": f"Success: {label_tracking}"
@@ -219,6 +223,7 @@ def web_scan_checking_page(request):
     return render(request, PAGE_PATH + "web_scan_checking_page.html", content)
 
 
+# working on it for printing label
 def web_scan_printing_page(request):
     print("web_scan_printing_page")
     if request.method == "POST" and "picking_submit" in request.POST:
@@ -236,11 +241,17 @@ def web_scan_report(request):
     print("web_scan_report")
     if not check_login_status(request):
         return redirect("HomeApp:login")
-
+    location = get_session_user_location(request)
+    warehouse_code_map = {
+        "FPL": 7,
+        "TX": 11,
+        "NJ": 13
+    }
+    wh_code = warehouse_code_map.get(location)
     import time
     if request.method == "POST" and 'compare_btn' in request.POST:
         start_time = time.time()
-        result_dict = compare_web_scan_tracking_with_eccang(request)
+        result_dict = compare_web_scan_tracking_with_eccang(request, wh_code, location)
         print("--- %s seconds ---" % (time.time() - start_time))
         if result_dict["result"]:
             return result_dict["response"]
@@ -249,48 +260,33 @@ def web_scan_report(request):
 
     if request.method == "POST" and 'compare2_btn' in request.POST:
         start_time = time.time()
-        result_dict = compare_web_scan_tracking_with_eccang_pending_orders(request, 7)
+        result_dict = compare_web_scan_tracking_with_eccang_pending_orders(request, wh_code, location)
         print("--- %s seconds ---" % (time.time() - start_time))
         if result_dict["result"]:
             return result_dict["response"]
         else:
             messages.warning(request, result_dict["msg"])
-
-    if request.method == "POST" and 'export_btn_wh3' in request.POST:
-        start_time = time.time()
-        result_dict = compare_web_scan_tracking_with_eccang_pending_orders(request, 8)
-        print("--- %s seconds ---" % (time.time() - start_time))
-        if result_dict["result"]:
-            return result_dict["response"]
-        else:
-            messages.warning(request, result_dict["msg"])
-
     content = {
         "title": "Web Scan Report",
-        "page_head": "Scan Report",
+        "page_head": f"Scan Report - {location}",
         "df_title": "Web Scan Table",
         "df_columns": ['ContainerNo', 'Carrier', 'Tracking', 'CreateDate'],
         "display_columns": ['ContainerNo', 'Carrier', 'Tracking', 'CreateDate', 'MachineName',
                             "OrderCode", "ProductCode"],
     }
 
-    # # get picking list table
-    # picking_df = get_picking_list_no_db(7)
-    # if not picking_df.empty:
-    #     content["picking_list"] = picking_df["picking_code"].tolist()
-    #
-    # # get WH3 picking list table
-    # picking_df = get_picking_list_no_db(8)
-    # if not picking_df.empty:
-    #     content["picking_list_wh3"] = picking_df["picking_code"].tolist()
-    #
-    # from datetime import datetime, timedelta
-    # over_all_list = []
-    # for i in range(7):
-    #     over_all_list.append(datetime.strftime(datetime.now() + timedelta(days=-i), '%y%m%d'))
-    # content["overall_picking_list"] = over_all_list
+    # get picking list table
+    picking_df = get_picking_list_no_db(wh_code)
+    if not picking_df.empty:
+        content["picking_list"] = picking_df["picking_code"].tolist()
 
-    content["display_data"] = get_tracking_detail_data(5000)
+    from datetime import datetime, timedelta
+    over_all_list = []
+    for i in range(7):
+        over_all_list.append(datetime.strftime(datetime.now() + timedelta(days=-i), '%y%m%d'))
+    content["overall_picking_list"] = over_all_list
+
+    content["display_data"] = get_tracking_detail_data(5000, location)
 
     return render(request, PAGE_PATH + "web_scan_report.html", content)
 

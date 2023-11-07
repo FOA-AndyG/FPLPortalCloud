@@ -13,9 +13,9 @@ from Django_apps.OMSOrderApp.reports.scan_function import return_match_tracking_
     return_match_tracking_function_no_shipped_orders
 
 
-def create_trailer(trailer_number, username, create_date):
+def create_trailer(trailer_number, username, create_date, location):
     obj = WebScan(trailer_number=trailer_number, username=username, create_date=create_date,
-                  total_box=0, status=0)
+                  total_box=0, status=0, location=location)
     obj.save()
 
 
@@ -63,11 +63,11 @@ def save_tracking_detail(trailer_number, carrier, tracking_number, username, ord
     obj.save()
 
 
-def save_tracking_detail_skip(trailer_number, carrier, tracking_number, username, check_system):
+def save_tracking_detail_skip(trailer_number, carrier, tracking_number, username, check_system, location):
     obj = WebScanDetail(trailer_number=trailer_number, carrier=carrier,
                         tracking_number=tracking_number, username=username,
                         create_date=datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S'),
-                        check_system=check_system)
+                        check_system=check_system, location=location)
     obj.save()
 
     WebScan.objects.filter(trailer_number=trailer_number, status=0).update(total_box=F('total_box') + 1)
@@ -81,8 +81,8 @@ def save_tracking_detail_error(trailer_number, carrier, tracking_number, usernam
     obj.save()
 
 
-def get_tracking_detail_data(total_number):
-    obj = WebScanDetail.objects.all().order_by('-create_date')[:total_number]
+def get_tracking_detail_data(total_number, location):
+    obj = WebScanDetail.objects.filter(location=location).order_by('-create_date')[:total_number]
     return obj
 
 
@@ -114,8 +114,8 @@ def get_eccang_order_data():
     return df
 
 
-def compare_web_scan_tracking_with_eccang(request, warehouse_code):
-    scan_df = pd.DataFrame(list(get_tracking_detail_data(20000).values()))
+def compare_web_scan_tracking_with_eccang(request, warehouse_code, location):
+    scan_df = pd.DataFrame(list(get_tracking_detail_data(20000, location).values()))
     scan_df = scan_df.rename(columns={"tracking_number": "Tracking", "carrier": "Carrier"})
     scan_df = scan_df.drop(columns=['id', 'check_system', 'order_code', 'product_code'])
 
@@ -169,8 +169,8 @@ def compare_web_scan_tracking_with_eccang(request, warehouse_code):
     return content
 
 
-def compare_web_scan_tracking_with_eccang_pending_orders(request, warehouse_code):
-    scan_df = pd.DataFrame(list(get_tracking_detail_data(20000).values()))
+def compare_web_scan_tracking_with_eccang_pending_orders(request, warehouse_code, location):
+    scan_df = pd.DataFrame(list(get_tracking_detail_data(20000, location).values()))
     scan_df = scan_df.rename(columns={"tracking_number": "Tracking", "carrier": "Carrier"})
     scan_df = scan_df.drop(columns=['id', 'check_system', 'order_code', 'product_code'])
 

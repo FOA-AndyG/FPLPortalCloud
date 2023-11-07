@@ -193,6 +193,7 @@ class WebScan(models.Model):
     close_date = models.DateTimeField(blank=True, null=True)
     total_box = models.IntegerField(blank=True, null=True)
     status = models.IntegerField(blank=True, null=True)
+    location = models.CharField(max_length=45, blank=True, null=True)
     objects = models.Manager()
 
     class Meta:
@@ -209,6 +210,7 @@ class WebScanDetail(models.Model):
     order_code = models.CharField(max_length=45, blank=True, null=True)
     product_code = models.CharField(max_length=155, blank=True, null=True)
     check_system = models.IntegerField(blank=True, null=True)
+    location = models.CharField(max_length=45, blank=True, null=True)
     objects = models.Manager()
 
     class Meta:

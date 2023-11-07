@@ -22,6 +22,43 @@
 {% endfor %}
 {% endif %}
 <hr>
+<!--TRACKING compare -->
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-2">
+            <label>Select Picking List: *</label>
+            <select class="form-control" name="search_list" required>
+                <option value="" disabled selected>Picking list</option>
+                {% for picking in overall_picking_list %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+                {% for picking in picking_list %}
+                <option value="{{picking}}">{{picking}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-info btn-block short_loading" type="submit" name="compare_btn" id="compare_btn"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting..." value="7"
+            >
+                <i class="fa fa-download"></i> Export All
+            </button>
+        </div>
+        <div class="col-sm-2">
+            <label style="visibility:hidden">click</label>
+            <button class="btn btn-info btn-block short_loading" type="submit" name="compare2_btn" id="compare2_btn"
+                    data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting..." value="7"
+            >
+                <i class="fa fa-download"></i> Export Pending Orders
+            </button>
+        </div>
+    </div>
+</form>
+<br>
+<hr>
+
 <!-- Content Row -->
 <div class="row">
     <!-- Begin datatable Content -->
