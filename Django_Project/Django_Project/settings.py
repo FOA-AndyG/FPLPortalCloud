@@ -85,14 +85,14 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
     },
-    'ecmysql': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'wms',
-        'USER': 'edi',
-        'PASSWORD': 'A!05FOA2021edi',
-        'HOST': '34.96.174.105',
-        'PORT': '3306',
-    },
+    # 'ecmysql': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'wms',
+    #     'USER': 'edi',
+    #     'PASSWORD': 'A!05FOA2021edi',
+    #     'HOST': '34.96.174.105',
+    #     'PORT': '3306',
+    # },
 }
 
 
