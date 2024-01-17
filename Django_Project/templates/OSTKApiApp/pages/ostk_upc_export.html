@@ -1,0 +1,87 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<title>OSTK UPC Export</title>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<div class="content">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <div class="container-fluid">
+          <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="True">&times;</span>
+            </button>
+            {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <h1>OSTK UPC Export</h1>
+
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+
+    <h3>Export OSTK UPC excel</h3>
+<!--        <div class="col-sm-3" style="float:left">-->
+<!--            <input class="form-control" name="import_file_path" required type="file"-->
+<!--                   accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">-->
+<!--        </div>-->
+        <div class="col-sm-1" style="float:left">
+            <button class="btn btn-primary loading" name="export_button" id="export_button" type="button" onclick="export_upc()"
+            data-loading-text="<i class='fas fa-sync fa-spin'></i> Exporting...">
+                <i class="fas fa-cloud-upload-alt"></i>Export
+            </button>
+        </div>
+
+</div>
+
+{% endblock content %}
+<!-- JavaScript -->
+{% block scripts %}
+<script>
+    /* export function for all the branches */
+    function export_upc() {
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'OSTKApiApp:ostk_upc_export' %}",
+            data: {"upc_export": "upc_export"},
+            xhrFields:{
+                responseType: 'blob'
+            },
+            beforeSend: function() {
+                console.log("this is the start of connection");
+            },
+            success: function(response) {
+                console.log("this is the end of connection");
+                const blob = response;
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = "OSTK_UPC.xls";
+                a.click();
+            /* function creates a download link, appends it to an invisible element, then clicks the download link */
+            },
+            complete: function() {
+                $('#export_button').removeAttr("disabled");
+                $('#export_button').removeClass("disabled");
+                $('#export_button').empty();
+                $('#export_button').html("<i class='fas fa-cloud-upload-alt'></i>Export</i>");
+            },
+            error: function() {
+                alert("Sorry, there was an error processing your export request. Please refresh the page and try again.");
+            }
+        });
+    }
+</script>
+{% endblock scripts %}

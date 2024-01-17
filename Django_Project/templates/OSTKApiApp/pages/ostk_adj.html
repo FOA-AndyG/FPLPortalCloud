@@ -1,0 +1,207 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<style>
+    .fields {
+        display: flex;
+    }
+    .fieldw {
+        width: 20%;
+    }
+
+    .nav>li>a {
+        position: relative !important; 
+        display: block !important;
+        padding: 10px 15px !important;
+    }
+    .active {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-bottom-color: transparent;
+    }
+</style>
+
+<head>
+    <title>TX-OSTK</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+
+<div class="content">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <div class="container-fluid">
+            <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="True">&times;</span>
+            </button>
+            {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <h1>
+        OSTK Adjustments
+    </h1>
+    <div style="display:flex;">
+        <p>Last Updated:  </p>
+        <div class="time title" id="time">Loading...</div>
+    </div>
+    <ul class="nav nav-tabs" style="margin-bottom: 5px;">
+        <li class="active" id="menutab1"><a data-toggle="tab" href="#menu1">Adjustments</a></li>
+        <li id="menutab2"><a data-toggle="tab" href="#menu2">History</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="menu1" class="tab-pane fade in active show">
+            <table class="table table-striped cell-border" name="adj_table" id="adj_table">
+                <thead>
+                    <tr>
+                        <th style="display:none;">id</th>
+                        <th>Warehouse</th>
+                        <th>Product Barcode</th>
+                        <th>Quantity</th>
+                        <th>Add Time</th>
+                        <th>Reasoning</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in adj_data %}
+                    <tr>
+                        <form action="post" id="row{{ forloop.counter }}">
+                        {% csrf_token %}
+                            <td name="id{{ forloop.counter }}" id="id{{ forloop.counter }}" style="display:none;">{{item.0}}</td>
+                            <td name="wh{{ forloop.counter }}" id="wh{{ forloop.counter }}">{{item.4}}</td>
+                            <td name="item{{ forloop.counter }}" id="item{{ forloop.counter }}">{{item.1}}</td>
+                            <td name="qty{{ forloop.counter }}" id="qty{{ forloop.counter }}">{{item.2}}</td>
+                            <td>{{item.3}}</td>
+                            <td>
+                                <div style="display:flex; justify-content: space-between;">
+                                    <select name="reason_code{{ forloop.counter }}" id="reason_code{{ forloop.counter }}" style="height: 26px;" required>
+                                    <option disabled selected value> -- select an option -- </option>
+                                    <option value="Inbound Operator Error">Inbound Operator Error (Receiving Error)</option>
+                                    <option value="Product Damaged">Product Damaged (After Receipt) – Found during cycle count</option>
+                                    <option value="Overages">Overages (After Receipt) – Found during cycle count</option>
+                                    <option value="Shortages">Shortages (After Receipt) – Found during cycle count</option>
+                                    <option value="Return Back to Stock">Return Back to Stock - Returns that are good to adjust back to stock</option>
+                                    </select>
+                                    <p id="err_msg{{ forloop.counter }}" style="margin:0px; color:red;" hidden><i class="bi bi-exclamation-triangle"></i> Error</p>
+                                </div>
+                            </td>
+                            <td><button type="submit" name="adjustments{{ forloop.counter }}" id="adjustments{{ forloop.counter }}" onclick="send_adj(this)">Submit</button></td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="menu2" class="tab-pane fade">
+            <table cellspacing="0" class="table table-striped cell-border main_table" id="adj_history">
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Quantity</th>
+                        <th>Reasoning</th>
+                        <th>Add Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in history %}
+                    <tr>
+                        <td>{{record.0}}</td>
+                        <td>{{record.1}}</td>
+                        <td>{{record.2}}</td>
+                        <td>{{record.3}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript">
+    function refreshTime() {
+        const timeDisplay = document.getElementById("time");
+        const dateString = new Date().toLocaleString();
+        const formattedString = dateString.replace(", ", " - ");
+        timeDisplay.textContent = formattedString;
+    }
+    function send_adj(ele) {
+        var ele_id = ele.id;
+        var indx = ele_id.replace(/\D/g, "");
+        $("#row"+ indx).one("submit", function(e){
+            e.preventDefault()
+            //validate fields
+            var table = document.getElementById("adj_table");
+            var row = table.rows[indx];
+            const id = Number($("#id"+indx).text());
+            const wh = Number($("#wh"+indx).text());
+            const item = $("#item" + indx).text();
+            const qty = Number($("#qty" + indx).text());
+            const reason_code = $("#reason_code" + indx).val();
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'OSTKApiApp:ostk_adj' %}",
+                dataType: 'JSON',
+                data: {"id": id, "wh": wh, "item": item, 'qty' : qty, 'reason_code': reason_code},
+                beforeSend: function() {
+                    $("#adjustments" + indx).html(`<i class='fa fa-circle-o-notch fa-spin'></i>`);
+                    $("#adjustments" + indx).attr("disabled", true)
+                },
+                success: function(response){
+                    console.log(response);
+                    if (response['status'] == 200) {
+                        $("#adjustments" + indx).closest("tr").remove();
+                    } else {
+                        $("#err_msg" + indx).removeAttr("hidden");
+                    }
+                },
+                complete: function() {
+                    $("#adjustments" + indx).text("Submit");
+                    $("#adjustments" + indx).removeAttr("disabled");
+                },
+                error: function(){
+                    console.log("failed");
+                    $("#adjustments" + indx).text("Submit");
+                    $("#adjustments" + indx).removeAttr("disabled");
+                }
+            });
+            document.getElementById("#row"+ indx).reset();
+        });
+    }
+
+function refreshDataW() {
+    window.location.reload();
+}
+
+window.onload = refreshTime;
+/*the time running every 10 minutes*/
+setInterval(refreshTime, 600000);
+/*runs the query every 10 minutes*/
+setInterval(refreshDataW, 600000);
+
+$('li').on("click", function(){
+        var href = $(this).attr('href');
+        console.log(href);
+        if (href != "menu1") {
+            $('#menutab1').removeClass("active");
+        }
+    });
+</script>
+
+{% endblock scripts %}
+    

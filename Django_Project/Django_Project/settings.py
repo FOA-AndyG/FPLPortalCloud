@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Andy
     'Django_apps.HomeApp',
     'Django_apps.OMSOrderApp',
+    'Django_apps.OSTKApiApp',
 ]
 
 MIDDLEWARE = [
