@@ -20,6 +20,112 @@ import xlwt
 from xlutils.copy import copy
 from .sql_connection import *
 
+
+"""
+Inbound Operator Error (Receiving Error)                                76 +1
+Product Damaged (After Receipt) – Found during cycle count              73 -1
+Overages (After Receipt) – Found during cycle count                     1  +1
+Shortages (After Receipt) – Found during cycle count                    1  -1
+Return Back to Stock - Returns that are good to adjust back to stock    65 +1
+"""
+
+controller = {
+    "Inbound Operator Error": 76,
+    "Product Damaged": 73,
+    "Overages": 1,
+    "Shortages": 1,
+    "Return Back to Stock": 65
+}
+
+
+def create(request, id, wh, sku, qty, reason_code):
+    testing = False
+    adj_name = 'adj_reasoning'
+    status = 500
+    if testing:
+        overstock_url = "https://inbound-warehouse-transaction-ws.overstock.com/inventoryAdjustment"
+        basic = HTTPBasicAuth('furnitureofamerica', '#N5A9CmSWCoFT5do`cigE3n7J')
+    else:
+        overstock_url = "https://api.bedbathandbeyond.com/inbound-warehouse-transaction-ws/inventoryAdjustment"
+        basic = HTTPBasicAuth('furnitureofamerica', 'Q9fEiazCcEoX%Dt$zY3k#7#3P')
+    conn = mysql_connection()
+    cursor = conn.cursor()
+    try:
+        ref = request.POST.get("ref", "SELLABLE")
+        trans_code = int(request.POST.get("trans_code", 852))
+        # qty should be always positive
+        if qty < 0:
+            qty = -(qty)
+        current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        naive = datetime.datetime.strptime(current_date, "%Y-%m-%d %H:%M:%S")
+        utc_dt = naive.astimezone(pytz.utc)
+        utc_format = utc_dt.strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
+        if reason_code == "Product Damaged" or reason_code == "Shortages":
+            filter_qty = -qty
+        else:
+            filter_qty = qty
+        q = """INSERT {adj_name} (wh_id, product_barcode, ref, trans_code, qty, reason_code, add_time) VALUES (%s, %s, %s, %s, %s, %s, %s)""".format(
+            adj_name=adj_name)
+        cursor.execute(q, (wh, sku, ref, trans_code, filter_qty, reason_code, current_date,))
+        container = []
+        q2 = """SELECT id, add_time FROM {adj_name} WHERE add_time = %s""".format(adj_name=adj_name)
+        cursor.execute(q2, (current_date,))
+        uid, d = cursor.fetchone()
+        current_time_format = datetime.datetime.strftime(d, "%Y-%m-%dT%H:%M:%S.%f%z") + "Z"
+        container.append({
+            "warehouseSku": sku,  # product
+            "transactionCode": str(trans_code),
+            "firstControlNumber": str(controller[reason_code]),
+            "transactionQuantity": filter_qty,
+            "transactionDate": utc_format,
+            "firstLocationId": ref,
+            "uid": str(uid),
+        })
+        q3 = f"""SELECT wh_code FROM wh_xref WHERE warehouse_id = {wh}"""
+        cursor.execute(q3)
+        wh_code = cursor.fetchone()
+        if len(wh_code) == 0:
+            raise Exception(f"no warehouse xref {wh}")
+        snap_request = {
+            'organizationId': 'FOA',
+            'warehouseName': wh_code[0],
+            'inventoryAdjustments': container
+        }
+
+        print(snap_request)
+
+    except Exception as e:
+        conn.rollback()
+        print(e)
+        q = """INSERT script_logger (response_name, response_code, status, data) VALUES (%s, %s, %s, %s)"""
+        cursor.execute(q, ("inv_adj", 500, "Failure", f"{e}"))
+        conn.commit()
+    else:
+        if testing is False:
+            response = requests.post(overstock_url, json=snap_request, auth=basic)
+            print("----------------------response-------------------------")
+            print(response)
+            print("----------------------response-------------------------")
+        status = response.status_code
+        if status == 200:
+            stat_txt = 'Success'
+            record_id(id, cursor)
+        else:
+            stat_txt = 'Failure'
+            record_id(id, cursor)
+            conn.rollback()
+        q = """INSERT script_logger (response_name, response_code, status, data) VALUES (%s, %s, %s, %s)"""
+        cursor.execute(q, ("inv_adj", status, stat_txt, json.dumps(snap_request, indent=4)))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+        return status
+
+def record_id(id, cursor):
+    q = f"""INSERT INTO adj_tracker (pil_id) VALUES ('{id}')"""
+    cursor.execute(q)
+
 def get_today_adjustments():
     testing = False
     conn = wms_mysql_connection()
@@ -32,7 +138,21 @@ def get_today_adjustments():
         cursor2.execute(q)
         data = cursor2.fetchall()
     else:
-        q = """SELECT pil_id, product_barcode, pil_quantity, pil_add_time, warehouse_id FROM product_inventory_log WHERE application_code='adjustInventory' AND warehouse_id = 11 AND pil_add_time >= NOW() - INTERVAL 1 DAY"""
+        wh_id_q = """SELECT warehouse_id FROM wh_xref"""
+        cursor2.execute(wh_id_q)
+        wh_id_data = cursor2.fetchall()
+        indx = 0
+        wh_size = len(wh_id_data) - 1
+        # grab the warehouse ID in wh_xref table
+        warehouse_string = f"warehouse_id = {wh_id_data[indx][0]}"
+        while indx < wh_size:
+            indx += 1
+            warehouse_string += f" OR warehouse_id = {wh_id_data[indx][0]}"
+        for wh_id in wh_id_data:
+            id = wh_id[0]
+            warehouse_string += ""
+        q = f"""SELECT pil_id, product_barcode, pil_quantity, pil_add_time, warehouse_id FROM product_inventory_log WHERE application_code='adjustInventory' AND pil_add_time >= NOW() - INTERVAL 1 DAY AND ({warehouse_string})"""
+        print(q)
         cursor.execute(q)
         data = cursor.fetchall()
     for product in data:
@@ -49,7 +169,11 @@ def get_adj_history():
     conn = mysql_connection()
     cursor = conn.cursor()
 
-    adj_history_q = """SELECT product_barcode, qty, reason_code, add_time FROM adj_reasoning ORDER BY add_time desc"""
+    adj_history_q = """
+    SELECT i.wh_code, product_barcode, qty, reason_code, add_time FROM ostk_fpl.adj_reasoning h
+    LEFT JOIN ostk_fpl.wh_xref i ON h.wh_id = i.warehouse_id
+    ORDER BY add_time desc
+    """
 
     cursor.execute(adj_history_q)
     history = cursor.fetchall()
