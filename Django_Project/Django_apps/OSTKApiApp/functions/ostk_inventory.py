@@ -49,8 +49,7 @@ from .sql_connection import *
 #     )
 #     return connwms
 
-def lax_ostk_inv(request):
-    conn = wms_mysql_connection()
+def lax_ostk_inv(conn):
     cursor = conn.cursor()
     inv_q = """SELECT u.product_barcode, u.product_title, i.pi_sellable, i.pi_reserved, i.pi_shipped, r.received AS received FROM product AS u
     LEFT JOIN product_inventory AS i ON u.product_barcode = i.product_barcode
@@ -58,10 +57,10 @@ def lax_ostk_inv(request):
     WHERE i.customer_code = 'OSTK' AND i.warehouse_id = 7 AND NOT i.product_barcode = 'OSTK-TESTSKU1'"""
     cursor.execute(inv_q)
     data = cursor.fetchall()
+    cursor.close()
     return data
 
-def tx_ostk_inv(request):
-    conn = wms_mysql_connection()
+def tx_ostk_inv(conn):
     cursor = conn.cursor()
     inv_q = """SELECT u.product_barcode, u.product_title, i.pi_sellable, i.pi_reserved, i.pi_shipped, r.received AS received FROM product AS u
     LEFT JOIN product_inventory AS i ON u.product_barcode = i.product_barcode
@@ -69,4 +68,5 @@ def tx_ostk_inv(request):
     WHERE i.customer_code = 'OSTK' AND i.warehouse_id = 11 AND NOT i.product_barcode = 'OSTK-TESTSKU1'"""
     cursor.execute(inv_q)
     data = cursor.fetchall()
+    cursor.close()
     return data

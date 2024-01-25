@@ -68,6 +68,7 @@
                 <thead>
                     <tr>
                         <th style="display:none;">id</th>
+                        <th style="display:none;">Warehouse ID</th>
                         <th>Warehouse</th>
                         <th>Product Barcode</th>
                         <th>Quantity</th>
@@ -82,7 +83,8 @@
                         <form action="post" id="row{{ forloop.counter }}">
                         {% csrf_token %}
                             <td name="id{{ forloop.counter }}" id="id{{ forloop.counter }}" style="display:none;">{{item.0}}</td>
-                            <td name="wh{{ forloop.counter }}" id="wh{{ forloop.counter }}">{{item.4}}</td>
+                            <td name="wh{{ forloop.counter }}" id="wh{{ forloop.counter }}" style="display:none;">{{item.4}}</td>
+                            <td name="wh_desc{{ forloop.counter }}" id="wh_desc{{ forloop.counter }}">{{item.5}}</td>
                             <td name="item{{ forloop.counter }}" id="item{{ forloop.counter }}">{{item.1}}</td>
                             <td name="qty{{ forloop.counter }}" id="qty{{ forloop.counter }}">{{item.2}}</td>
                             <td>{{item.3}}</td>

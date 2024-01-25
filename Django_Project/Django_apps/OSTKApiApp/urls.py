@@ -7,6 +7,7 @@ app_name = 'OSTKApiApp'
 
 urlpatterns = [
     path("ostk_inventory/", views.ostk_inventory, name="ostk_inventory"),
+    path("ostk_po_receipt/", views.ostk_po_receipt, name="ostk_po_receipt"),
     path("tx_ostk_orders/", views.tx_ostk_orders, name="tx_ostk_orders"),
     path("lax_ostk_orders/", views.lax_ostk_orders, name="lax_ostk_orders"),
     path("ostk_po_import/", views.ostk_po_import, name="ostk_po_import"),

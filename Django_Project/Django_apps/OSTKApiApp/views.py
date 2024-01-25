@@ -4,25 +4,35 @@ import pandas as pd
 from .functions.ostk_inventory import tx_ostk_inv, lax_ostk_inv
 from .functions import ostk_orders
 from .functions import ostk_functions
+from .functions import ostk_po
+from Django_apps.OSTKApiApp.functions.sql_connection import *
 
 PAGE_PATH = "OSTKApiApp/pages/"
 # Create your views here.
 
 def ostk_inventory(request):
-    data_tx = tx_ostk_inv(request)
-    data_lax = lax_ostk_inv(request)
+    conn = wms_mysql_connection()
+    data_tx = tx_ostk_inv(conn)
+    data_lax = lax_ostk_inv(conn)
     content = {
         "data": data_tx,
         "data_lax": data_lax
     }
+    conn.close()
     # return render(request, "programtools/pages/ostk_inventory.html", {"content": content})
     return render(request, PAGE_PATH + "ostk_inventory.html", {"content": content})
 
 def tx_ostk_orders(request):
+    conn = mysql_connection()
+    conn_wms = wms_mysql_connection()
+    conn_cloud = cloud_connection()
     # need to include other branches
-    shipconfirm = ostk_orders.tx_ostk_shipconfirm(request)
-    open = ostk_orders.tx_ostk_open(request)
-    error = ostk_orders.tx_ostk_error(request)
+    shipconfirm = ostk_orders.tx_ostk_shipconfirm(conn, conn_wms, conn_cloud)
+    open = ostk_orders.tx_ostk_open(conn, conn_wms, conn_cloud)
+    error = ostk_orders.tx_ostk_error(conn, conn_wms, conn_cloud)
+    conn.close()
+    conn_wms.close()
+    conn_cloud.close()
     content = {
         "open": open,
         "error": error,
@@ -30,15 +40,21 @@ def tx_ostk_orders(request):
     }
 
     if request.method == 'GET' and 'export' in request.GET:
-        export = ostk_orders.tx_ostk_export(request)
+        export = ostk_orders.tx_ostk_export(conn, conn_wms, conn_cloud)
+        conn.close()
+        conn_wms.close()
+        conn_cloud.close()
         return export
     return render(request, PAGE_PATH + "tx_ostk_orders.html", {"content": content})
 
 def lax_ostk_orders(request):
+    conn = mysql_connection()
+    conn_wms = wms_mysql_connection()
+    conn_cloud = cloud_connection()
     # need to include other branches
-    shipconfirm = ostk_orders.lax_ostk_shipconfirm(request)
-    open = ostk_orders.lax_ostk_open(request)
-    error = ostk_orders.lax_ostk_error(request)
+    shipconfirm = ostk_orders.lax_ostk_shipconfirm(conn, conn_wms, conn_cloud)
+    open = ostk_orders.lax_ostk_open(conn, conn_wms, conn_cloud)
+    error = ostk_orders.lax_ostk_error(conn, conn_wms, conn_cloud)
     content = {
         "open": open,
         "error": error,
@@ -46,8 +62,14 @@ def lax_ostk_orders(request):
     }
 
     if request.method == 'GET' and 'export' in request.GET:
-        export = ostk_orders.lax_ostk_export(request)
+        export = ostk_orders.lax_ostk_export(conn, conn_wms, conn_cloud)
+        conn.close()
+        conn_wms.close()
+        conn_cloud.close()
         return export
+    conn.close()
+    conn_wms.close()
+    conn_cloud.close()
     return render(request, PAGE_PATH + "lax_ostk_orders.html", {"content": content})
 
 
@@ -110,3 +132,14 @@ def ostk_sh(request):
         "order_codes": order_code
     }
     return render(request, PAGE_PATH + "ostk_sh.html", content)
+
+
+def ostk_po_receipt(request):
+    conn = mysql_connection()
+    print("po_receipt")
+    po_data = ostk_po.get_ostk_po(conn)
+    content = {
+        "po_data": po_data
+    }
+    conn.close()
+    return render(request, PAGE_PATH + "ostk_po_receipt.html", content)

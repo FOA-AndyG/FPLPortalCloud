@@ -144,14 +144,17 @@ def get_today_adjustments():
         indx = 0
         wh_size = len(wh_id_data) - 1
         # grab the warehouse ID in wh_xref table
-        warehouse_string = f"warehouse_id = {wh_id_data[indx][0]}"
+        warehouse_string = f"i.warehouse_id = {wh_id_data[indx][0]}"
         while indx < wh_size:
             indx += 1
-            warehouse_string += f" OR warehouse_id = {wh_id_data[indx][0]}"
+            warehouse_string += f" OR i.warehouse_id = {wh_id_data[indx][0]}"
         for wh_id in wh_id_data:
             id = wh_id[0]
             warehouse_string += ""
-        q = f"""SELECT pil_id, product_barcode, pil_quantity, pil_add_time, warehouse_id FROM product_inventory_log WHERE application_code='adjustInventory' AND pil_add_time >= NOW() - INTERVAL 1 DAY AND ({warehouse_string})"""
+        # q = f"""SELECT pil_id, product_barcode, pil_quantity, pil_add_time, warehouse_id FROM product_inventory_log WHERE application_code='adjustInventory' AND pil_add_time >= NOW() - INTERVAL 1 DAY AND ({warehouse_string})"""
+        q = f"""SELECT i.pil_id, i.product_barcode, i.pil_quantity, i.pil_add_time, i.warehouse_id, w.warehouse_code FROM product_inventory_log i
+            LEFT JOIN warehouse w ON i.warehouse_id = w.warehouse_id
+            WHERE i.application_code='adjustInventory' AND i.pil_add_time >= NOW() - INTERVAL 1 DAY AND i.product_barcode LIKE 'OSTK%' AND ({warehouse_string})"""
         print(q)
         cursor.execute(q)
         data = cursor.fetchall()
@@ -162,7 +165,7 @@ def get_today_adjustments():
         cursor2.execute(open_adj_q)
         exist_id = cursor2.fetchone()
         if exist_id is None:
-            f_data.append((id, item, product[2], product[3], product[4]))
+            f_data.append((id, item, product[2], product[3], product[4], product[5]))
     return f_data
 
 def get_adj_history():
