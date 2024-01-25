@@ -52,7 +52,7 @@ def tx_ostk_open(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FPLTX1' AND (status != 'S' AND status != 'H' AND status != 'X' AND status != 'E')"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 11 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'TX'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
@@ -69,7 +69,7 @@ def tx_ostk_shipconfirm(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FPLTX1' AND status = 'S'"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 11 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'TX'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
@@ -84,7 +84,7 @@ def tx_ostk_error(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FPLTX1' AND status = 'E'"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 11 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'TX'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
@@ -100,7 +100,7 @@ def tx_ostk_export(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FPLTX1'"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 11 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'TX'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
@@ -169,7 +169,7 @@ def lax_ostk_open(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FURNITUREPROWH' AND (status != 'S' AND status != 'H' AND status != 'X' AND status != 'E')"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 7 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'FPL'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
@@ -186,7 +186,7 @@ def lax_ostk_shipconfirm(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FURNITUREPROWH' AND status = 'S'"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 7 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'FPL'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
@@ -201,7 +201,7 @@ def lax_ostk_error(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FURNITUREPROWH' AND status = 'E'"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 7 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'FPL'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
@@ -217,7 +217,7 @@ def lax_ostk_export(conn, conn_wms, conn_cloud):
     FROM orders_record
     WHERE wh_code = 'FURNITUREPROWH'"""
     wms_q = """SELECT order_code, order_status FROM wms.orders WHERE warehouse_id = 7 AND customer_code = 'OSTK'"""
-    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where username = 'YoskardyS'"""
+    cloud_q = """SELECT tracking_number AS tracking_no, create_date AS scan_time FROM itweb.web_scan_detail where location = 'FPL'"""
     orders_df = pd.read_sql_query(orders_q, conn)
     wms_df = pd.read_sql_query(wms_q, conn_wms)
     cloud_df = pd.read_sql_query(cloud_q, conn_cloud)
