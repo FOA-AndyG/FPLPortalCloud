@@ -134,7 +134,9 @@ def get_today_adjustments():
     cursor2 = conn2.cursor()
     f_data = []
     if testing:
-        q = """SELECT * FROM product_inventory_log_test WHERE pil_add_time >= NOW() - INTERVAL 1 DAY"""
+        q = """SELECT t.*, w.wh_code FROM ostk_fpl.product_inventory_log_test t
+        left join ostk_fpl.wh_xref w on t.warehouse_id = w.warehouse_id
+        WHERE pil_add_time >= NOW() - INTERVAL 3 DAY"""
         cursor2.execute(q)
         data = cursor2.fetchall()
     else:
@@ -154,7 +156,7 @@ def get_today_adjustments():
         # q = f"""SELECT pil_id, product_barcode, pil_quantity, pil_add_time, warehouse_id FROM product_inventory_log WHERE application_code='adjustInventory' AND pil_add_time >= NOW() - INTERVAL 1 DAY AND ({warehouse_string})"""
         q = f"""SELECT i.pil_id, i.product_barcode, i.pil_quantity, i.pil_add_time, i.warehouse_id, w.warehouse_code FROM product_inventory_log i
             LEFT JOIN warehouse w ON i.warehouse_id = w.warehouse_id
-            WHERE i.application_code='adjustInventory' AND i.pil_add_time >= NOW() - INTERVAL 1 DAY AND i.product_barcode LIKE 'OSTK%' AND ({warehouse_string})"""
+            WHERE i.application_code='adjustInventory' AND i.pil_add_time >= NOW() - INTERVAL 3 DAY AND i.product_barcode LIKE 'OSTK%' AND ({warehouse_string})"""
         print(q)
         cursor.execute(q)
         data = cursor.fetchall()

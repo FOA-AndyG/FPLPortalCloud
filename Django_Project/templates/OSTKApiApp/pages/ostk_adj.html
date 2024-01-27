@@ -163,7 +163,7 @@
                 dataType: 'JSON',
                 data: {"id": id, "wh": wh, "item": item, 'qty' : qty, 'reason_code': reason_code},
                 beforeSend: function() {
-                    $("#adjustments" + indx).html(`<i class='fa fa-circle-o-notch fa-spin'></i>`);
+                    $("#adjustments" + indx).html(`<i class='fa fa-circle-o-notch fa-spin'></i>Submitting..`);
                     $("#adjustments" + indx).attr("disabled", true)
                 },
                 success: function(response){
@@ -184,7 +184,7 @@
                     $("#adjustments" + indx).removeAttr("disabled");
                 }
             });
-            document.getElementById("#row"+ indx).reset();
+            $("#row"+ indx).trigger('reset');
         });
     }
 
