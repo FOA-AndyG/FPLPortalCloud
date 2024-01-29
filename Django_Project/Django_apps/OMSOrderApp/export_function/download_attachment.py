@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from Database.mysql_handler import SQLAlchemyHandler
+from Django_Project.settings import EXCEL_FILE_PATH
 
 
 def get_picking_list(db, warehouse_code):
@@ -176,7 +177,7 @@ def export_picking_detail(request):
         # columns_list = ["oat_file_path", "oat_file_type", "oat_file_note"]
         # df = df.drop(columns=columns_list)
 
-        file_path = f"static/OMSOrderApp/attachment_files/{picking}/"
+        file_path = f"{EXCEL_FILE_PATH}/attachment_files/{picking}/"
         if not os.path.exists(file_path):
             os.makedirs(file_path, 777)
 

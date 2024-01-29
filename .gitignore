@@ -133,24 +133,10 @@ dmypy.json
 # *.xlsx
 
 **/settings_local.py
-Django_Project/static/OMSOrderApp/pdf_files/*.pdf
-Django_Project/static/OMSOrderApp/attachment_files/**/*.pdf
-Django_Project/static/OMSOrderApp/attachment_files/**/*.xlsx
-Django_Project/static/OMSOrderApp/attachment_files/**/*.gif
-Django_Project/static/OMSOrderApp/attachment_files/**/*
 
-Django_Project/static/OMSOrderApp/order_files/**/*.xls
-Django_Project/static/OMSOrderApp/order_files/**/*.xlsx
-
-Django_Project/static/OMSOrderApp/tracking_files/**/*.xlsx
-
+Django_Project/static/OMSOrderApp/**/*
+Django_Project/media/OMSOrderApp/**/*
 # Django_Project/static/sb_admin_temp/*
-Django_Project/static/OMSOrderApp/container_files/**/*.pdf
-Django_Project/static/OMSOrderApp/report_files/order_sales_report/**/*.xlsx
-Django_Project/static/OMSOrderApp/report_files/tracking_report/**/*.xlsx
-Django_Project/static/OMSOrderApp/report_files/storage_fee_report/**/*.xlsx
-Django_Project/static/OMSOrderApp/report_files/fba_storage_fee_report/**/*.xlsx
-Django_Project/static/OMSOrderApp/report_files/direct_sale_report/**/*.xlsx
 
 Django_Project/static/ScanApp/scan_info/**/*.xlsx
 Django_Project/static/ScanApp/scan_info/**/*.xls

@@ -6,6 +6,7 @@ import pandas as pd
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 
+from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.HomeApp.functions.session_function import get_session_user_username
 from Django_apps.OMSOrderApp.api_handler.oms_api import *
 from Django_apps.OMSOrderApp.export_function.download_attachment import foa_generate_label
@@ -74,7 +75,7 @@ def process_import(request):
 # 1.
 def save_import_order_file(request):
     try:
-        file_path = f"static/OMSOrderApp/order_files/{get_session_user_username(request)}/"
+        file_path = f"{EXCEL_FILE_PATH}/order_files/{get_session_user_username(request)}/"
         if not os.path.exists(file_path):
             os.makedirs(file_path, 777)
 
@@ -424,7 +425,7 @@ def fdw_order_process_function(request):
 
         result_file_name = f"order_auto_new_pack_{file_name}.xls"
 
-        file_save_path = f"static/OMSOrderApp/order_files/fdw_order_file/{get_session_user_username(request)}/"
+        file_save_path = f"{EXCEL_FILE_PATH}/order_files/fdw_order_file/{get_session_user_username(request)}/"
         if not os.path.exists(file_save_path):
             os.makedirs(file_save_path, 777)
 

@@ -5,6 +5,7 @@ import pandas as pd
 from django.http import HttpResponse
 
 from Database.mysql_handler import SQLAlchemyHandler
+from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.HomeApp.functions.session_function import get_session_user_username
 
 
@@ -81,7 +82,7 @@ def process_order_sales_report(request, df_columns, export_df_columns):
         result_df = result_df.fillna('')
         # print(result_df)
 
-        file_save_path = f"static/OMSOrderApp/report_files/order_sales_report/{get_session_user_username(request)}/"
+        file_save_path = f"{EXCEL_FILE_PATH}/report_files/order_sales_report/{get_session_user_username(request)}/"
         if not os.path.exists(file_save_path):
             os.makedirs(file_save_path, 777)
         current_time = datetime.strftime(datetime.now(), '%Y_%m_%d_%H_%M_%S')
@@ -225,7 +226,7 @@ def process_order_sales_report_new(request, df_columns, export_df_columns):
         result_df = result_df.fillna('')
         # print(result_df)
 
-        file_save_path = f"static/OMSOrderApp/report_files/order_sales_report/{get_session_user_username(request)}/"
+        file_save_path = f"{EXCEL_FILE_PATH}/report_files/order_sales_report/{get_session_user_username(request)}/"
         if not os.path.exists(file_save_path):
             os.makedirs(file_save_path, 777)
         current_time = datetime.strftime(datetime.now(), '%Y_%m_%d_%H_%M_%S')

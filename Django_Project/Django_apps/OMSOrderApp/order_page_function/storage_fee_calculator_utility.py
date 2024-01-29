@@ -6,6 +6,8 @@ from calendar import monthrange
 from django.http import HttpResponse
 
 from Database.mssql_handler import MSSQLAlchemyHandler
+
+from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.HomeApp.functions.session_function import get_session_user_username
 from Django_apps.OMSOrderApp.customer_handler.customer_account import get_customer_object
 
@@ -180,7 +182,7 @@ def new_calculate_fee(request):
         current_time = datetime.strftime(datetime.now(), '%Y_%m_%d_%H_%M_%S')
         result_file_name = f"{customer}{current_time}.xlsx"
 
-        file_save_path = f"static/OMSOrderApp/report_files/storage_fee_report/{get_session_user_username(request)}/"
+        file_save_path = f"{EXCEL_FILE_PATH}/report_files/storage_fee_report/{get_session_user_username(request)}/"
         if not os.path.exists(file_save_path):
             os.makedirs(file_save_path, 777)
 

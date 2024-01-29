@@ -5,6 +5,7 @@ import pandas as pd
 from django.core.files.storage import default_storage
 from django.http import HttpResponse
 
+from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.HomeApp.functions.session_function import get_session_user_username
 from Django_apps.OMSOrderApp.models import FplDirectSalePricingLog
 
@@ -31,7 +32,7 @@ def export_current_price_log_table(request, display_data):
             columns=['SKU', 'Direct Sale Price', 'Last Modify Date', 'Username']
         )
 
-        file_save_path = f"static/OMSOrderApp/report_files/direct_sale_report/{get_session_user_username(request)}/export/"
+        file_save_path = f"{EXCEL_FILE_PATH}/report_files/direct_sale_report/{get_session_user_username(request)}/export/"
         if not os.path.exists(file_save_path):
             os.makedirs(file_save_path, 777)
         current_time = datetime.strftime(datetime.now(), '%Y_%m_%d_%H_%M_%S')

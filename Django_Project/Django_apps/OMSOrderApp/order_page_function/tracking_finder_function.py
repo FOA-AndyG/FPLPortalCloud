@@ -5,12 +5,13 @@ import pandas as pd
 from django.http import HttpResponse
 
 from Database.mysql_handler import SQLAlchemyHandler
+from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.HomeApp.functions.session_function import get_session_user_username
 
 
 def process_tracking_find(request):
     print()
-    file_path = f"static/OMSOrderApp/tracking_files/{get_session_user_username(request)}/"
+    file_path = f"{EXCEL_FILE_PATH}/tracking_files/{get_session_user_username(request)}/"
     if not os.path.exists(file_path):
         os.makedirs(file_path, 777)
 

@@ -133,23 +133,3 @@ def get_picking_details_df_no_shipped_orders(db, picking):
     return content
 
 # ==========================================================================
-
-
-# todo: functions to import FEDEX tracking records
-def import_fedex_scan_records(request, username):
-    print("import_fedex_scan_records")
-    # save file from user import
-    file = request.FILES['import_file_path']
-    folder = f"static/OMSOrderApp/report_files/tracking_report/{username}/"
-    fs = FileSystemStorage(location=folder)
-    fs.save(file.name, file)
-    file_name = str(file.name)
-
-    # read file to data frame
-    if file_name.endswith("xlsx"):
-        df = pd.read_excel(folder + file_name)
-        # print("xlsx")
-    else:
-        html = "<html><body>Invalid file.</body></html>"
-        return HttpResponse(html)
-    df = df.fillna('')

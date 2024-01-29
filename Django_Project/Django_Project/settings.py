@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 from pathlib import Path
+# from django.contrib.auth.decorators import login_required
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -152,3 +153,14 @@ except ImportError:
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# LOGIN_URL = 'HomeApp:login'
+# check OS
+print("os.name: ", os.name)
+if str(os.name) == "nt":
+    # Windows: static/OMSOrderApp to media
+    EXCEL_FILE_PATH = "media/OMSOrderApp"
+else:
+    # Linux
+    # use FTP server to save files
+    EXCEL_FILE_PATH = "srv/files"

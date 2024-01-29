@@ -7,6 +7,7 @@ from django.db.models import F
 from django.http import HttpResponse
 
 from Database.mysql_handler import ECANGMySQLConnection, SQLAlchemyHandler
+from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.OMSOrderApp.export_function.download_attachment import get_picking_list
 from Django_apps.OMSOrderApp.models import WebScan, WebScanDetail, WebScanDetailError
 from Django_apps.OMSOrderApp.reports.scan_function import return_match_tracking_function, \
@@ -140,7 +141,7 @@ def compare_web_scan_tracking_with_eccang(request, warehouse_code, location):
             final_df = return_match_tracking_function(db, picking, scan_df)
 
     if not final_df.empty:
-        file_path = f"static/OMSOrderApp/report_files/tracking_report/{picking}/"
+        file_path = f"{EXCEL_FILE_PATH}/report_files/tracking_report/{picking}/"
         if not os.path.exists(file_path):
             os.makedirs(file_path, 777)
         current_time = datetime.strftime(datetime.now(), '%Y_%m_%d_%H_%M_%S')
@@ -194,7 +195,7 @@ def compare_web_scan_tracking_with_eccang_pending_orders(request, warehouse_code
             final_df = return_match_tracking_function_no_shipped_orders(db, picking, scan_df)
 
     if not final_df.empty:
-        file_path = f"static/OMSOrderApp/report_files/tracking_report/{picking}/"
+        file_path = f"{EXCEL_FILE_PATH}/report_files/tracking_report/{picking}/"
         if not os.path.exists(file_path):
             os.makedirs(file_path, 777)
         current_time = datetime.strftime(datetime.now(), '%Y_%m_%d_%H_%M_%S')

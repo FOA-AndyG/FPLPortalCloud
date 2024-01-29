@@ -65,6 +65,13 @@
             <tr>
                 <td>{{ r.picking_code }}</td>
                 <td>{{ r.order_code }}</td>
+                <td>
+                    {% if r.order_status == 5 %}
+                    Pulled
+                    {% else %}
+                    Labeled
+                    {% endif %}
+                </td>
                 <td>{{ r.product_barcode }}</td>
                 <td>{{ r.parcel_quantity }}</td>
                 <td>{{ r.tracking_number }}</td>

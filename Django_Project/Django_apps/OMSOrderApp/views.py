@@ -41,7 +41,7 @@ def pdf_merge_page(request):
 
     content = {
         "title": "Download Order Attachment Page",
-        "save_path": "static/OMSOrderApp/pdf_files/",
+        "save_path": f"{EXCEL_FILE_PATH}/pdf_files/",
         "download_path": "",
         "result_msg": ""
     }
@@ -194,9 +194,9 @@ def web_scan_checking_page(request):
     print("web_scan_checking_page")
 
     content = {
-        "title": "Tracking Check",
-        "page_head": "Tracking Check",
-        "display_columns": ['picking_code', 'order_code', 'product_barcode', 'parcel_quantity',
+        "title": "Pending order - Check",
+        "page_head": "Pending order - Check",
+        "display_columns": ['picking_code', 'order_code', 'order_status', 'product_barcode', 'parcel_quantity',
                             'tracking_number', 'multiple_tracking_number'],
     }
 
@@ -214,8 +214,9 @@ def web_scan_checking_page(request):
         else:
             rslt_df = ecang_data_df[ecang_data_df['product_barcode'].str.contains(tracking_input)]
 
+        print(rslt_df)
         if rslt_df.empty:
-             messages.warning(request, "Error: No Records found.")
+            messages.warning(request, "Error: No Records found.")
         else:
             messages.success(request, "Success: Records found.")
 

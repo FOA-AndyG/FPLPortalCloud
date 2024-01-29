@@ -18,6 +18,7 @@ from Database.mysql_handler import SQLAlchemyHandler
 from pdf2image import convert_from_path
 import pytesseract
 
+from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.OMSOrderApp.models import OmsLabelInfo
 
 
@@ -141,15 +142,15 @@ async def process_download_attachment(request):
     try:
         picking = request.POST.get('picking_select')
 
-        file_path = f"static/OMSOrderApp/attachment_files/{picking}/"
+        file_path = f"{EXCEL_FILE_PATH}/attachment_files/{picking}/"
         if not os.path.exists(file_path):
             os.makedirs(file_path, 777)
 
-        temp_pdf_file_path = f"static/OMSOrderApp/attachment_files/{picking}/temp/pdf/"
+        temp_pdf_file_path = f"{EXCEL_FILE_PATH}/attachment_files/{picking}/temp/pdf/"
         if not os.path.exists(temp_pdf_file_path):
             os.makedirs(temp_pdf_file_path, 777)
 
-        temp_img_file_path = f"static/OMSOrderApp/attachment_files/{picking}/temp/img/"
+        temp_img_file_path = f"{EXCEL_FILE_PATH}/attachment_files/{picking}/temp/img/"
         if not os.path.exists(temp_img_file_path):
             os.makedirs(temp_img_file_path, 777)
 
@@ -239,7 +240,7 @@ def get_connection_for_eccang_sftp():
         HOSTNAME = "34.96.174.105"
         USERNAME = "eccang"
         PASSWORD = "eccang123"
-        KEY_PATH = "static/OMSOrderApp/eccang_server_key/eccang"
+        KEY_PATH = "{EXCEL_FILE_PATH}/eccang_server_key/eccang"
 
         # cnopts = pysftp.CnOpts(knownhosts=KEY_PATH)
         # sftp = pysftp.Connection(HOSTNAME, username=USERNAME, private_key_pass=PASSWORD, cnopts=cnopts)
@@ -386,7 +387,7 @@ def get_container_list():
 
 
 def process_container_label(receive_no, total_number, selected_tracking):
-    file_path = f"static/OMSOrderApp/container_files/{receive_no}/"
+    file_path = f"{EXCEL_FILE_PATH}/container_files/{receive_no}/"
     if not os.path.exists(file_path):
         os.makedirs(file_path, 777)
 
@@ -493,7 +494,7 @@ def export_picking_detail(request):
         columns_list = ["oat_file_path", "oat_file_type", "oat_file_note"]
         df = df.drop(columns=columns_list)
 
-        file_path = f"static/OMSOrderApp/attachment_files/{picking}/"
+        file_path = f"{EXCEL_FILE_PATH}/attachment_files/{picking}/"
         if not os.path.exists(file_path):
             os.makedirs(file_path, 777)
 
