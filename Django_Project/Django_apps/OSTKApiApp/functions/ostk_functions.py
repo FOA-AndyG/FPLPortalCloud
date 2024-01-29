@@ -154,9 +154,19 @@ def get_today_adjustments():
             id = wh_id[0]
             warehouse_string += ""
         # q = f"""SELECT pil_id, product_barcode, pil_quantity, pil_add_time, warehouse_id FROM product_inventory_log WHERE application_code='adjustInventory' AND pil_add_time >= NOW() - INTERVAL 1 DAY AND ({warehouse_string})"""
-        q = f"""SELECT i.pil_id, i.product_barcode, i.pil_quantity, i.pil_add_time, i.warehouse_id, w.warehouse_code FROM product_inventory_log i
-            LEFT JOIN warehouse w ON i.warehouse_id = w.warehouse_id
-            WHERE i.application_code='adjustInventory' AND i.pil_add_time >= NOW() - INTERVAL 3 DAY AND i.product_barcode LIKE 'OSTK%' AND ({warehouse_string})"""
+        q = f"""SELECT x.pil_id, x.product_barcode, x.pil_quantity, x.pil_add_time, x.warehouse_id, w.warehouse_code FROM(
+            SELECT i.pil_id, i.product_barcode, i.pil_quantity, i.pil_add_time, i.warehouse_id FROM product_inventory_log i
+            WHERE i.application_code='adjustInventory' AND i.product_barcode LIKE 'OSTK%' AND i.pil_add_time >= NOW() - INTERVAL 15 DAY AND ({warehouse_string})
+            UNION
+            SELECT d.rd_id, d.product_barcode, d.rd_putaway_qty, d.rd_update_time, r.warehouse_id from receiving_detail AS d
+            LEFT JOIN (SELECT warehouse_id, receiving_code FROM receiving) AS r ON r.receiving_code = d.receiving_code
+            WHERE d.receiving_code LIKE 'RMA%' AND d.product_barcode LIKE 'OSTK%' ) x
+            LEFT JOIN warehouse w ON x.warehouse_id = w.warehouse_id"""
+        # q = f"""SELECT i.pil_id, i.product_barcode, i.pil_quantity, i.pil_add_time, i.warehouse_id, w.warehouse_code FROM product_inventory_log i
+        #     LEFT JOIN warehouse w ON i.warehouse_id = w.warehouse_id
+        #     WHERE i.application_code='adjustInventory' AND i.pil_add_time >= NOW() - INTERVAL 3 DAY AND i.product_barcode LIKE 'OSTK%' AND ({warehouse_string})
+        #     UNION
+        #     select rd_id, product_barcode, rd_putaway_qty, rd_update_time, 0 AS warehouse_id, 'RETURN' AS warehouse_code from receiving_detail where receiving_code LIKE 'RMA%' AND product_barcode LIKE 'OSTK%'"""
         print(q)
         cursor.execute(q)
         data = cursor.fetchall()
