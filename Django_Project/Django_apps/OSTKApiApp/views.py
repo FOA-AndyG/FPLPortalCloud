@@ -102,7 +102,7 @@ def ostk_po_import(request):
         upload = request.FILES['import_file_path']
         ostk_po_db = pd.read_excel(upload, engine='openpyxl', skiprows=1)
         ostk_functions.import_ostk_po_func(request, ostk_po_db)
-        return render(request, 'programtools/pages/tx_ostk_po_import.html')
+        return render(request, 'programtools/pages/ostk_po_import.html')
     return render(request, PAGE_PATH + "ostk_po_import.html")
 
 
