@@ -19,7 +19,8 @@ import xlwt
 from xlutils.copy import copy
 
 def get_ostk_po(conn):
-    po_q = """SELECT * FROM po_master_status WHERE status != 'X'"""
+    po_q = """SELECT * FROM po_sub_status WHERE status != 'X' order by status asc"""
     po_df = pd.read_sql_query(po_q, conn)
     po_df.replace([pd.NaT], [None])
     return list(po_df.itertuples(index=False))
+
