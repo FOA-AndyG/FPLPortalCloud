@@ -6,7 +6,7 @@ def mysql_connection():
         host='35.225.128.227', # prod
         # host='34.71.96.24',  # testing
         user='prog',
-        password="prog123",
+        password="Prog@123",
         db='ostk_fpl',
     )
     return conn

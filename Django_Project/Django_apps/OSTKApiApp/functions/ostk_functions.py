@@ -54,16 +54,17 @@ def create(request, id, wh, sku, qty, reason_code):
         ref = request.POST.get("ref", "SELLABLE")
         trans_code = int(request.POST.get("trans_code", 852))
         # qty should be always positive
-        if qty < 0:
-            qty = -(qty)
+        # if qty < 0:
+        #     qty = -(qty)
         current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         naive = datetime.datetime.strptime(current_date, "%Y-%m-%d %H:%M:%S")
         utc_dt = naive.astimezone(pytz.utc)
         utc_format = utc_dt.strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
-        if reason_code == "Product Damaged" or reason_code == "Shortages":
-            filter_qty = -qty
-        else:
-            filter_qty = qty
+        # if reason_code == "Product Damaged" or reason_code == "Shortages":
+        #     filter_qty = -qty
+        # else:
+        #     filter_qty = qty
+        filter_qty = qty
         q = """INSERT {adj_name} (wh_id, product_barcode, ref, trans_code, qty, reason_code, add_time) VALUES (%s, %s, %s, %s, %s, %s, %s)""".format(
             adj_name=adj_name)
         cursor.execute(q, (wh, sku, ref, trans_code, filter_qty, reason_code, current_date,))

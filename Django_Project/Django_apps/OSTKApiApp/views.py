@@ -26,18 +26,6 @@ def tx_ostk_orders(request):
     conn = mysql_connection()
     conn_wms = wms_mysql_connection()
     conn_cloud = cloud_connection()
-    # need to include other branches
-    shipconfirm = ostk_orders.tx_ostk_shipconfirm(conn, conn_wms, conn_cloud)
-    open = ostk_orders.tx_ostk_open(conn, conn_wms, conn_cloud)
-    error = ostk_orders.tx_ostk_error(conn, conn_wms, conn_cloud)
-    conn.close()
-    conn_wms.close()
-    conn_cloud.close()
-    content = {
-        "open": open,
-        "error": error,
-        "shipconfirm": shipconfirm
-    }
 
     if request.method == 'GET' and 'export' in request.GET:
         export = ostk_orders.tx_ostk_export(conn, conn_wms, conn_cloud)
@@ -45,12 +33,35 @@ def tx_ostk_orders(request):
         conn_wms.close()
         conn_cloud.close()
         return export
+    
+    # need to include other branches
+    shipconfirm = ostk_orders.tx_ostk_shipconfirm(conn, conn_wms, conn_cloud)
+    open = ostk_orders.tx_ostk_open(conn, conn_wms, conn_cloud)
+    error = ostk_orders.tx_ostk_error(conn, conn_wms, conn_cloud)
+
+    content = {
+        "open": open,
+        "error": error,
+        "shipconfirm": shipconfirm
+    }
+
+    conn.close()
+    conn_wms.close()
+    conn_cloud.close()
     return render(request, PAGE_PATH + "tx_ostk_orders.html", {"content": content})
 
 def lax_ostk_orders(request):
     conn = mysql_connection()
     conn_wms = wms_mysql_connection()
     conn_cloud = cloud_connection()
+
+    if request.method == 'GET' and 'export' in request.GET:
+        export = ostk_orders.lax_ostk_export(conn, conn_wms, conn_cloud)
+        conn.close()
+        conn_wms.close()
+        conn_cloud.close()
+        return export
+    
     # need to include other branches
     shipconfirm = ostk_orders.lax_ostk_shipconfirm(conn, conn_wms, conn_cloud)
     open = ostk_orders.lax_ostk_open(conn, conn_wms, conn_cloud)
@@ -61,12 +72,6 @@ def lax_ostk_orders(request):
         "shipconfirm": shipconfirm
     }
 
-    if request.method == 'GET' and 'export' in request.GET:
-        export = ostk_orders.lax_ostk_export(conn, conn_wms, conn_cloud)
-        conn.close()
-        conn_wms.close()
-        conn_cloud.close()
-        return export
     conn.close()
     conn_wms.close()
     conn_cloud.close()
@@ -75,8 +80,6 @@ def lax_ostk_orders(request):
 
 def ostk_adj(request):
     print("ostk_adj")
-    adj_data = ostk_functions.get_today_adjustments()
-    history = ostk_functions.get_adj_history()
 
     if request.method == 'GET' and 'item' in request.GET:
         id = int(request.GET.get('id'))
@@ -87,7 +90,9 @@ def ostk_adj(request):
         status = ostk_functions.create(request, id, wh, item, qty, reason_code)
         return JsonResponse({"status": status}, safe=False)
 
-
+    adj_data = ostk_functions.get_today_adjustments()
+    history = ostk_functions.get_adj_history()
+    
     content = {
         "adj_data": adj_data,
         "history": history

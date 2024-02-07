@@ -21,31 +21,6 @@ from xlutils.copy import copy
 
 #********************************************TX************************************************
 
-# def tx_ostk_open_orders(request):
-#     conn = mysql_connection()
-#     cursor = conn.cursor()
-#     orders_q = """SELECT order_code, reference_no, carrier_code, service_level_code, item, qty, tracking_no, status
-#     FROM orders_record
-#     WHERE wh_code = 'FPLTX1' AND status = 'O'"""
-#     cursor.execute(orders_q)
-#     data = cursor.fetchall()
-#     cursor.close()
-#     conn.close()
-#     return data
-
-
-# def tx_ostk_processed_orders(request):
-#     conn = mysql_connection()
-#     cursor = conn.cursor()
-#     orders_q = """SELECT order_code, reference_no, carrier_code, service_level_code, item, qty, tracking_no, status
-#     FROM orders_record
-#     WHERE wh_code = 'FPLTX1' AND status = 'C'"""
-#     cursor.execute(orders_q)
-#     data = cursor.fetchall()
-#     cursor.close()
-#     conn.close()
-#     return data
-
 
 def tx_ostk_open(conn, conn_wms, conn_cloud):
     orders_q = """SELECT order_code, reference_no, carrier_code, service_level_code, item, qty, tracking_no, retail_order_no, add_time AS received
@@ -118,6 +93,8 @@ def tx_ostk_export(conn, conn_wms, conn_cloud):
     for i in range(0, len(new_order_df['api_status'])):
         if new_order_df['api_status'][i] == 'H':
             new_order_df['Status'][i] = 'Shortshipped'
+        elif new_order_df['api_status'][i] == 'E':
+            new_order_df['Status'][i] = 'Error'
         elif new_order_df['api_status'][i] == 'X':
             new_order_df['Status'][i] = 'Cancelled'
     del new_order_df['api_status']
@@ -136,32 +113,6 @@ def tx_ostk_export(conn, conn_wms, conn_cloud):
 
 
 #********************************************TX************************************************
-
-
-# def lax_ostk_open_orders(request):
-#     conn = mysql_connection()
-#     cursor = conn.cursor()
-#     orders_q = """SELECT order_code, reference_no, carrier_code, service_level_code, item, qty, tracking_no, status
-#     FROM orders_record
-#     WHERE wh_code = 'FURNITUREPROWH' AND status = 'O'"""
-#     cursor.execute(orders_q)
-#     data = cursor.fetchall()
-#     cursor.close()
-#     conn.close()
-#     return data
-
-
-# def lax_ostk_processed_orders(request):
-#     conn = mysql_connection()
-#     cursor = conn.cursor()
-#     orders_q = """SELECT order_code, reference_no, carrier_code, service_level_code, item, qty, tracking_no, status
-#     FROM orders_record
-#     WHERE wh_code = 'FURNITUREPROWH' AND status = 'C'"""
-#     cursor.execute(orders_q)
-#     data = cursor.fetchall()
-#     cursor.close()
-#     conn.close()
-#     return data
 
 
 def lax_ostk_open(conn, conn_wms, conn_cloud):
@@ -235,6 +186,8 @@ def lax_ostk_export(conn, conn_wms, conn_cloud):
     for i in range(0, len(new_order_df['api_status'])):
         if new_order_df['api_status'][i] == 'H':
             new_order_df['Status'][i] = 'Shortshipped'
+        elif new_order_df['api_status'][i] == 'E':
+            new_order_df['Status'][i] = 'Error'
         elif new_order_df['api_status'][i] == 'X':
             new_order_df['Status'][i] = 'Cancelled'
     del new_order_df['api_status']
