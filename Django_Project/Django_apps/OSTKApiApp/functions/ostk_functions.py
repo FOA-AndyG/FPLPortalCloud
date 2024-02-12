@@ -259,10 +259,12 @@ def import_ostk_po_func(request, df):
             ref = row['Warehouse PO #']
             tracking = row['Confirmation #']
             if ref:
-                print(eta_check, dt)
+                print(eta_check, dt, ref)
                 check_status_q = f"""SELECT status FROM {track_sub_name} WHERE master_ref_no = '{ref}' GROUP BY status"""
                 cursor.execute(check_status_q)
                 status = cursor.fetchone()
+                if status == None:
+                    raise Exception(f"{ref} does not exist")
                 if eta_check <= dt and status[0] == 'O':
                     if ref != None and tracking != None:
                         val.append((dt, tracking, ref))
@@ -274,20 +276,22 @@ def import_ostk_po_func(request, df):
     except Exception as e:
         print(e)
         conn.rollback()
-        messages.error(request, f"File Upload Failed {str(e)}")
+        messages.warning(request, f"File Upload Failed {str(e)}")
     else:
         print("commit")
         conn.commit()
-        messages.success(request, "File Upload Success")
         if late:
+            messages.success(request, "File Upload Partial Success")
             messages.warning(request, f"REF: {late} - Failed")
+        else:
+            messages.success(request, "File Upload Success")
     finally:
         cursor.close()
         conn.close()
 
 
 def manual_shortship(request):
-    master_ref_no = request.GET.get("order_code")
+    master_ref_no = request.POST.get("order_code")
     print("master_ref_no", master_ref_no)
     conn = mysql_connection()
     cursor = conn.cursor()
@@ -397,3 +401,89 @@ def get_order_codes_by_ref(ref):
     cursor.close()
     conn.close()
     return container
+
+
+def get_overages():
+    conn = mysql_connection()
+    cursor = conn.cursor()
+    testing = False
+    if testing:
+        po_overage_name = 'po_overage_logger_test'
+    else:
+        po_overage_name = 'po_overage_logger'
+    get_overages_q = f"""SELECT receiving_code, wh_code, master_ref_no, product_barcode, wms_qty, received_qty, ostk_qty, line_no FROM {po_overage_name} where status = 'O'"""
+    cursor.execute(get_overages_q)
+    container = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return container
+
+def manual_overage(request):
+    wh_code = request.POST.get("wh_code")
+    reference_no = request.POST.get("ref")
+    line_no = request.POST.get("line_no")
+    sku = request.POST.get("sku")
+    qty = int(request.POST.get("qty"))
+    current_date_obj = datetime.datetime.now()
+    current_date = current_date_obj.strftime("%Y-%m-%d %H:%M:%S")
+    naive = datetime.datetime.strptime(current_date, "%Y-%m-%d %H:%M:%S")
+    utc_dt = naive.astimezone(pytz.utc)
+    utc_format = utc_dt.strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
+    container = {                               
+        "organizationId": "FOA",         
+        "warehouseName": wh_code,     
+        "warehousePoNumber": reference_no,  # reference_no    
+        "purchaseOrderReceiptDetails": [{
+            "purchaseOrderLineId": line_no,      
+            "receiptDate": utc_format,        
+            "warehouseSku": sku,               
+            "quantity": qty
+        }]
+    }
+    conn = mysql_connection()
+    cursor = conn.cursor()
+    testing = False
+
+    logger_q = """INSERT script_logger (response_name, response_code, status, data) VALUES (%s, %s, %s, %s)"""
+
+    if testing:
+        track_sub_name = 'po_sub_test'
+        track_master_name = 'po_master_test'
+        po_overage_name = 'po_overage_logger'
+        overstock_url = "https://inbound-warehouse-transaction-ws.overstock.com/purchaseOrderReceipt"
+        basic = HTTPBasicAuth('furnitureofamerica', '#N5A9CmSWCoFT5do`cigE3n7J')
+    else:
+        track_sub_name = 'po_sub'
+        track_master_name = 'po_master'
+        po_overage_name = 'po_overage_logger'
+        overstock_url = "https://api.bedbathandbeyond.com/inbound-warehouse-transaction-ws/purchaseOrderReceipt"
+        basic = HTTPBasicAuth('furnitureofamerica', 'Q9fEiazCcEoX%Dt$zY3k#7#3P')
+
+    print(container)
+    if testing == False:
+        try:
+            header = {'Content-Type': 'application/json'}
+            response = requests.post(overstock_url, headers=header, json=container, auth=basic)
+            print("----------------------response-------------------------")
+            print(response)
+            print("----------------------response-------------------------")
+            if response.status_code == 200:
+                cursor.execute(logger_q, ("manual_po_receipt", 200, "Success", json.dumps(container, indent=4)))
+                conn.commit()
+            elif response.status_code != 200 and container:
+                conn.rollback()
+                cursor.execute(logger_q, ("manual_po_receipt", response.status_code, "Failure", json.dumps(container, indent=4)))
+                conn.commit()
+                raise Exception(container)
+        except Exception as e:
+            print(e)
+            cursor.execute(logger_q, ("manual_po_receipt", 500, "Failure", str(e)))
+            conn.commit()
+        else:
+            cursor.execute(f"UPDATE {track_master_name} SET received = {qty}, update_time = '{current_date_obj}'  WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+            cursor.execute(f"UPDATE {track_sub_name} SET received = {qty}, update_time = '{current_date_obj}' WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+            cursor.execute(f"UPDATE {po_overage_name} SET received_qty = {qty}, status = 'C' WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+            conn.commit()
+        finally:
+            cursor.close()
+            conn.close()

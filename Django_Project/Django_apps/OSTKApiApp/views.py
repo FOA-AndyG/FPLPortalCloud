@@ -122,7 +122,7 @@ def ostk_upc_export(request):
 def ostk_sh(request):
     print("ostk sh")
 
-    if request.method == 'GET' and 'shortship' in request.GET:
+    if request.method == 'POST' and 'shortship' in request.POST:
         ostk_functions.manual_shortship(request)
         return redirect("OSTKApiApp:ostk_sh")
 
@@ -148,3 +148,19 @@ def ostk_po_receipt(request):
     }
     conn.close()
     return render(request, PAGE_PATH + "ostk_po_receipt.html", content)
+
+
+def ostk_overages(request):
+    if request.method == 'POST' and 'send_overage' in request.POST:
+        print("overage")
+        ostk_functions.manual_overage(request)
+        return redirect("OSTKApiApp:ostk_overages")
+    
+    if request.method == 'GET' and 'pass_overage' in request.GET:
+        return JsonResponse(None)
+    
+    overage_data = ostk_functions.get_overages()
+    content = {
+        "overage_data": overage_data
+    }
+    return render(request, PAGE_PATH + "ostk_overages.html", content)
