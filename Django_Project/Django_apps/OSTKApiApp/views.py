@@ -1,3 +1,4 @@
+from http.client import HTTPResponse
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, JsonResponse
 import pandas as pd
@@ -149,6 +150,16 @@ def ostk_po_receipt(request):
     conn.close()
     return render(request, PAGE_PATH + "ostk_po_receipt.html", content)
 
+def ostk_po_receipt_popup(request, receiving_code):
+    print("po_receipt_popup")
+    conn = mysql_connection()
+    view_data = ostk_po.get_po_view(conn, receiving_code)
+    content = {
+        "rc": receiving_code,
+        "view_data": view_data
+    }
+    conn.close()
+    return render(request, PAGE_PATH + "ostk_po_receipt_popout.html", content)
 
 def ostk_overages(request):
     if request.method == 'POST' and 'send_overage' in request.POST:
