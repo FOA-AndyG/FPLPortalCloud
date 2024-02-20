@@ -416,13 +416,15 @@ def get_overages():
     container = cursor.fetchall()
     cursor.close()
     conn.close()
-    return container
+    return container , len(container)
 
 def manual_overage(request):
     wh_code = request.POST.get("wh_code")
     reference_no = request.POST.get("ref")
     line_no = request.POST.get("line_no")
     sku = request.POST.get("sku")
+    recqty = int(request.POST.get("recqty"))
+    ostkqty = int(request.POST.get("ostkqty"))
     qty = int(request.POST.get("qty"))
     current_date_obj = datetime.datetime.now()
     current_date = current_date_obj.strftime("%Y-%m-%d %H:%M:%S")
@@ -440,6 +442,9 @@ def manual_overage(request):
             "quantity": qty
         }]
     }
+    po_receipt_controller = {
+        "purchaseOrderReceipts": [container]
+    }
     conn = mysql_connection()
     cursor = conn.cursor()
     testing = False
@@ -449,7 +454,7 @@ def manual_overage(request):
     if testing:
         track_sub_name = 'po_sub_test'
         track_master_name = 'po_master_test'
-        po_overage_name = 'po_overage_logger'
+        po_overage_name = 'po_overage_logger_test'
         overstock_url = "https://inbound-warehouse-transaction-ws.overstock.com/purchaseOrderReceipt"
         basic = HTTPBasicAuth('furnitureofamerica', '#N5A9CmSWCoFT5do`cigE3n7J')
     else:
@@ -459,31 +464,37 @@ def manual_overage(request):
         overstock_url = "https://api.bedbathandbeyond.com/inbound-warehouse-transaction-ws/purchaseOrderReceipt"
         basic = HTTPBasicAuth('furnitureofamerica', 'Q9fEiazCcEoX%Dt$zY3k#7#3P')
 
-    print(container)
+    print(po_receipt_controller)
     if testing == False:
         try:
             header = {'Content-Type': 'application/json'}
-            response = requests.post(overstock_url, headers=header, json=container, auth=basic)
+            response = requests.post(overstock_url, headers=header, json=po_receipt_controller, auth=basic)
             print("----------------------response-------------------------")
             print(response)
             print("----------------------response-------------------------")
-            if response.status_code == 200:
-                cursor.execute(logger_q, ("manual_po_receipt", 200, "Success", json.dumps(container, indent=4)))
+            status = response.status_code
+            if status == 200:
+                cursor.execute(logger_q, ("manual_po_receipt", 200, "Success", json.dumps(po_receipt_controller, indent=4)))
                 conn.commit()
-            elif response.status_code != 200 and container:
+            elif status != 200 and container:
                 conn.rollback()
-                cursor.execute(logger_q, ("manual_po_receipt", response.status_code, "Failure", json.dumps(container, indent=4)))
+                cursor.execute(logger_q, ("manual_po_receipt", status, "Failure", json.dumps(response.json(), indent=4)))
                 conn.commit()
-                raise Exception(container)
         except Exception as e:
             print(e)
             cursor.execute(logger_q, ("manual_po_receipt", 500, "Failure", str(e)))
             conn.commit()
         else:
-            cursor.execute(f"UPDATE {track_master_name} SET received = {qty}, update_time = '{current_date_obj}'  WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
-            cursor.execute(f"UPDATE {track_sub_name} SET received = {qty}, update_time = '{current_date_obj}' WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
-            cursor.execute(f"UPDATE {po_overage_name} SET received_qty = {qty}, status = 'C' WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
-            conn.commit()
+            if status == 200 and (qty+recqty) >= ostkqty:
+                cursor.execute(f"UPDATE {track_master_name} SET received = {qty+recqty}, status = 'C', update_time = '{current_date_obj}'  WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+                cursor.execute(f"UPDATE {track_sub_name} SET received = {qty+recqty}, status = 'C', update_time = '{current_date_obj}' WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+                cursor.execute(f"UPDATE {po_overage_name} SET received_qty = {qty+recqty}, status = 'C' WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+                conn.commit()
+            elif status == 200 and (qty+recqty) < ostkqty:
+                cursor.execute(f"UPDATE {track_master_name} SET received = {qty+recqty}, update_time = '{current_date_obj}'  WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+                cursor.execute(f"UPDATE {track_sub_name} SET received = {qty+recqty}, update_time = '{current_date_obj}' WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+                cursor.execute(f"UPDATE {po_overage_name} SET received_qty = {qty+recqty} WHERE master_ref_no = '{reference_no}' AND product_barcode = '{sku}'")
+                conn.commit()
         finally:
             cursor.close()
             conn.close()

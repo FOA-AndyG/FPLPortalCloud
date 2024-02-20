@@ -45,6 +45,8 @@
                     <input name="ref" id="ref" hidden>
                     <input name="line_no" id="line_no" hidden>
                     <input name="sku" id="sku" hidden>
+                    <input name="recqty" id="recqty" hidden>
+                    <input name="ostkqty" id="ostkqty" hidden>
                     <input name="qty" id="qty" hidden>
                     <button type="submit" class="btn btn-primary" name="send_overage" id="send_overage">Send</button>
                 </form>
@@ -55,18 +57,23 @@
 
 <div class="content">
     <h1>OSTK Overages Handler</h1>
-    <br><br>
+    <br>
+    <div style="white-space: pre-wrap;">This page handles overages as a quantity controller for receiving mistakes/errors.&#10;POs that appear on this page are overages and will need to be fulfilled to OSTK by the manual input.&#10;A placeholder value is provided to assist(can vary by the situation).&#10;Enter the correct quantity which the OSTK Quantity should equate with the Sent Quantity.
+    </div>
+    <br>
+    <!-- this holds the size to display the input placeholder  -->
+    <input hidden id="overage_size" value="{{overage_size}}">
     <table class="table table-striped cell-border" name="overage_table" id="overage_table">
         <thead>
             <tr>
                 <th>Receiving Code</th>
                 <th>Warehouse</th>
-                <th>Master Ref No</th>
+                <th>Reference No</th>
                 <th>SKU</th>
                 <th>WMS Qty</th>
-                <th>Received Qty</th>
-                <th>OSTK Qty</th>
-                <th>Line No</th>
+                <th>Sent Qty</th>
+                <th>OSTK Total Qty</th>
+                <th hidden>Line No</th>
                 <th>Manual Input</th>
                 <th>Action</th>
             </tr>
@@ -82,7 +89,7 @@
                     <td id="wmsqty{{ forloop.counter }}">{{item.4}}</td>
                     <td id="recqty{{ forloop.counter }}">{{item.5}}</td>
                     <td id="ostkqty{{ forloop.counter }}">{{item.6}}</td>
-                    <td id="lineno{{ forloop.counter }}">{{item.7}}</td>
+                    <td hidden><input id="lineno{{ forloop.counter }}" value="{{item.7}}" type="text"></td>
                     <td class="check_val"><input id="manqty{{ forloop.counter }}" type="number" min="0" style="font-size: 1rem;" required></td>
                     <td><button type="button" id="submit{{ forloop.counter }}" onclick="pass_overage('{{ forloop.counter }}')">Send</button></td>
                 </tr>
@@ -109,8 +116,10 @@
             $('#myModal').modal('toggle');
             $("#wh_code").val($('#wh'+indx_string).text());
             $("#ref").val($('#ref'+indx_string).text());
-            $("#line_no").val($('#lineno'+indx_string).text());
+            $("#line_no").val($('#lineno'+indx_string).val());
             $("#sku").val($('#sku'+indx_string).text());
+            $("#recqty").val($("#recqty"+indx_string).text());
+            $("#ostkqty").val($("#ostkqty"+indx_string).text());
             if ($('#manqty'+indx_string+"-error").length == 0) {
                 $("#qty").val($('#manqty'+indx_string).val());
             }
@@ -132,5 +141,16 @@
         let indx_string = String(indx);
         $('#manqty'+indx_string).isValid();
     }
+
+    $(document).ready(function() { 
+        let size = Number($("#overage_size").val());
+        var indx = 1;
+        while(indx <= size) {
+            let tot = Number($("#ostkqty"+indx).text());
+            let rced = Number($("#recqty"+indx).text());
+            $("#manqty"+indx).attr("placeholder", tot-rced);
+            indx += 1;
+        }
+    });
 </script>
 {% endblock scripts %}

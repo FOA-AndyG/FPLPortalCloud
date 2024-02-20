@@ -170,8 +170,9 @@ def ostk_overages(request):
     if request.method == 'GET' and 'pass_overage' in request.GET:
         return JsonResponse(None)
     
-    overage_data = ostk_functions.get_overages()
+    overage_data, overage_size = ostk_functions.get_overages()
     content = {
-        "overage_data": overage_data
+        "overage_data": overage_data,
+        "overage_size": overage_size
     }
     return render(request, PAGE_PATH + "ostk_overages.html", content)
