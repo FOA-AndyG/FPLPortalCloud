@@ -28,13 +28,14 @@
 </head>
 <div class="content">
     <h1>OSTK PO Receipts</h1>
+    <p style="white-space: pre-wrap;">This page shows the statuses of the POs that has been entered in the WMS.&#10;Clicking the receiving code will open a pop-up of it's reference numbers, SKUs, and quanities.&#10;</p>
     <hr style="height:2px;border-width:0;color:gray;background-color:gray;">
     <table cellspacing="0" class="table table-striped cell-border main_table" id="ostk_po">
         <thead>
             <tr>
-                <th>Receiving Code</th>
+                <th>OSTK PO</th>
                 <th>Warehouse</th>
-                <th># of Units</th>
+                <th># of SKUs</th>
                 <th>Received</th>
                 <th>Total</th>
                 <th>Update Time</th>
@@ -50,7 +51,13 @@
                 <td>{{item.3|stringformat:"i"}}</td>
                 <td>{{item.4|stringformat:"i"}}</td>
                 <td>{{item.5}}</td>
+                {% if item.6 == 'C' %}
+                <td>Complete</td>
+                {% elif item.6 == 'L' %}
+                <td>In Progress</td>
+                {% else %}
                 <td>{{item.6}}</td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>

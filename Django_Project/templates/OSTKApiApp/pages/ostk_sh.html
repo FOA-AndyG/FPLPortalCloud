@@ -97,6 +97,7 @@
     <h1>
         OSTK Manual Cancellation
     </h1>
+    <p style="white-space: pre-wrap;">The rows below are open orders that has not been ship confirmed yet.&#10;This page sends a cancellation to OSTK if we need to do so.&#10;Double check that you have searched for the correct OSTK Order No..&#10;Simply click the <i>Select</i> button and a pop-up will appear information of what will be cancelled.&#10;Double check the information is correct and click <i>Cancel Order</i>.&#10;</p>
     <form method="POST">
         {% csrf_token %}
         <div>
@@ -105,7 +106,7 @@
                     <tr>
                         <th>Warehouse</th>
                         <th>Carrier</th>
-                        <th>Ref</th>
+                        <th>OSTK Order No.</th>
                         <th>Action</th>
                     </tr>
                 </thead>

@@ -153,10 +153,11 @@ def ostk_po_receipt(request):
 def ostk_po_receipt_popup(request, receiving_code):
     print("po_receipt_popup")
     conn = mysql_connection()
-    view_data = ostk_po.get_po_view(conn, receiving_code)
+    view_data, view_size = ostk_po.get_po_view(conn, receiving_code)
     content = {
         "rc": receiving_code,
-        "view_data": view_data
+        "view_data": view_data,
+        "view_size": view_size
     }
     conn.close()
     return render(request, PAGE_PATH + "ostk_po_receipt_popout.html", content)

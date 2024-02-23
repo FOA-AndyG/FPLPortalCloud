@@ -318,7 +318,7 @@ def manual_shortship(request):
             "details": []
         }
 
-        get_order_qty_q = f"""SELECT item, CASE WHEN carrier_type <> 'LTL' THEN COUNT(*) ELSE qty END AS qty, line_no FROM {order_record_name} WHERE master_ref_no = '{master_ref_no}' GROUP BY item"""
+        get_order_qty_q = f"""SELECT item, CASE WHEN carrier_type <> 'LTL' THEN COUNT(*) ELSE qty END AS qty, line_no FROM {order_record_name} WHERE master_ref_no = '{master_ref_no}' and status <> 'S' and status <> 'H' and status <> 'X' GROUP BY item"""
         cursor.execute(get_order_qty_q)
         orders_qty_obj = cursor.fetchall()
         for item in orders_qty_obj:
@@ -327,6 +327,8 @@ def manual_shortship(request):
                 "warehouseSku": item[0],
                 "orderQuantity": item[1]
             }) #append dictionary
+            q2 = f"""UPDATE {order_record_name} SET status = 'H' WHERE master_ref_no = '{master_ref_no}' and item = '{item[0]}'"""
+            cursor.execute(q2)
 
         shipconfirm_controller = {
             "orders": [container]
@@ -334,23 +336,22 @@ def manual_shortship(request):
         print(shipconfirm_controller)
     except Exception as e:
         print(e)
+        conn.rollback()
         cursor.execute(q_log, ("shortship", 500, "Failure", f"{e}"))
         conn.commit()
         messages.error(request, f"{e}")
     else:
-        q2 = f"""UPDATE {order_record_name} SET status = 'H' WHERE master_ref_no = '{master_ref_no}'"""
-        cursor.execute(q2)
         if testing is False:
             response = requests.post(overstock_url, json=shipconfirm_controller, auth=basic)
             print("----------------------response-------------------------")
             print(response)
             print("----------------------response-------------------------")
-        status = response.status_code
-        if status == 200:
-            cursor.execute(q_log, ("shortship", status, "Success", json.dumps(shipconfirm_controller, indent=4)))
-        else:
-            cursor.execute(q_log, ("shortship", status, "Failure", json.dumps(shipconfirm_controller, indent=4)))
-        conn.commit()
+            status = response.status_code
+            if status == 200:
+                cursor.execute(q_log, ("shortship", status, "Success", json.dumps(shipconfirm_controller, indent=4)))
+            else:
+                cursor.execute(q_log, ("shortship", status, "Failure", json.dumps(shipconfirm_controller, indent=4)))
+            conn.commit()
         messages.success(request, f"{master_ref_no} Order Shortshipped")
     finally:
         cursor.close()
