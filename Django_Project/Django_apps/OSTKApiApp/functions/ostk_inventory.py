@@ -53,7 +53,7 @@ def lax_ostk_inv(conn):
     cursor = conn.cursor()
     inv_q = """SELECT u.product_barcode, u.product_title, i.pi_sellable, i.pi_reserved, i.pi_shipped, r.received AS received FROM product AS u
     LEFT JOIN product_inventory AS i ON u.product_barcode = i.product_barcode
-    LEFT JOIN (SELECT product_barcode, SUM(rd_putaway_qty) AS received FROM receiving_detail GROUP BY product_barcode) AS r ON r.product_barcode = u.product_barcode
+    LEFT JOIN (SELECT product_barcode, SUM(pil_quantity) AS received FROM product_inventory_log WHERE warehouse_id = 7 AND application_code = 'Putaway' GROUP BY product_barcode) AS r ON r.product_barcode = u.product_barcode
     WHERE i.customer_code = 'OSTK' AND i.warehouse_id = 7 AND NOT i.product_barcode = 'OSTK-TESTSKU1'"""
     cursor.execute(inv_q)
     data = cursor.fetchall()
@@ -64,7 +64,7 @@ def tx_ostk_inv(conn):
     cursor = conn.cursor()
     inv_q = """SELECT u.product_barcode, u.product_title, i.pi_sellable, i.pi_reserved, i.pi_shipped, r.received AS received FROM product AS u
     LEFT JOIN product_inventory AS i ON u.product_barcode = i.product_barcode
-    LEFT JOIN (SELECT product_barcode, SUM(rd_putaway_qty) AS received FROM receiving_detail GROUP BY product_barcode) AS r ON r.product_barcode = u.product_barcode
+    LEFT JOIN (SELECT product_barcode, SUM(pil_quantity) AS received FROM product_inventory_log WHERE warehouse_id = 11 AND application_code = 'Putaway' GROUP BY product_barcode) AS r ON r.product_barcode = u.product_barcode
     WHERE i.customer_code = 'OSTK' AND i.warehouse_id = 11 AND NOT i.product_barcode = 'OSTK-TESTSKU1'"""
     cursor.execute(inv_q)
     data = cursor.fetchall()
