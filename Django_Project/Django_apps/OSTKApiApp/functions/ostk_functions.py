@@ -98,8 +98,8 @@ def create(request, id, wh, sku, qty, reason_code):
     except Exception as e:
         conn.rollback()
         print(e)
-        q = """INSERT script_logger (response_name, response_code, status, data) VALUES (%s, %s, %s, %s)"""
-        cursor.execute(q, ("inv_adj", 500, "Failure", f"{e}"))
+        q = """INSERT script_logger (response_name, response_code, status, data, response_data) VALUES (%s, %s, %s, %s, %s)"""
+        cursor.execute(q, ("inv_adj", 500, "Failure", json.dumps(snap_request, indent=4), f"{e}"))
         conn.commit()
     else:
         if testing is False:
@@ -115,8 +115,8 @@ def create(request, id, wh, sku, qty, reason_code):
             stat_txt = 'Failure'
             record_id(id, cursor)
             conn.rollback()
-        q = """INSERT script_logger (response_name, response_code, status, data) VALUES (%s, %s, %s, %s)"""
-        cursor.execute(q, ("inv_adj", status, stat_txt, json.dumps(snap_request, indent=4)))
+        q = """INSERT script_logger (response_name, response_code, status, data, response_data) VALUES (%s, %s, %s, %s, %s)"""
+        cursor.execute(q, ("inv_adj", status, stat_txt, json.dumps(snap_request, indent=4), None))
         conn.commit()
     finally:
         cursor.close()
@@ -306,7 +306,7 @@ def manual_shortship(request):
         overstock_url = "https://api.bedbathandbeyond.com/inbound-warehouse-transaction-ws/shortShip"
         basic = HTTPBasicAuth('furnitureofamerica', 'Q9fEiazCcEoX%Dt$zY3k#7#3P')
 
-    q_log = """INSERT script_logger (response_name, response_code, status, data) VALUES (%s, %s, %s, %s)"""
+    q_log = """INSERT script_logger (response_name, response_code, status, data, response_data) VALUES (%s, %s, %s, %s, %s)"""
     try:
         q = f"""SELECT wh_code FROM {order_record_name} WHERE master_ref_no = '{master_ref_no}' GROUP BY wh_code"""
         cursor.execute(q)
@@ -337,7 +337,7 @@ def manual_shortship(request):
     except Exception as e:
         print(e)
         conn.rollback()
-        cursor.execute(q_log, ("shortship", 500, "Failure", f"{e}"))
+        cursor.execute(q_log, ("shortship", 500, "Failure", json.dumps(shipconfirm_controller, indent=4), f"{e}"))
         conn.commit()
         messages.error(request, f"{e}")
     else:
@@ -348,9 +348,9 @@ def manual_shortship(request):
             print("----------------------response-------------------------")
             status = response.status_code
             if status == 200:
-                cursor.execute(q_log, ("shortship", status, "Success", json.dumps(shipconfirm_controller, indent=4)))
+                cursor.execute(q_log, ("shortship", status, "Success", json.dumps(shipconfirm_controller, indent=4), None))
             else:
-                cursor.execute(q_log, ("shortship", status, "Failure", json.dumps(shipconfirm_controller, indent=4)))
+                cursor.execute(q_log, ("shortship", status, "Failure", json.dumps(shipconfirm_controller, indent=4), None))
             conn.commit()
         messages.success(request, f"{master_ref_no} Order Shortshipped")
     finally:
@@ -450,7 +450,7 @@ def manual_overage(request):
     cursor = conn.cursor()
     testing = False
 
-    logger_q = """INSERT script_logger (response_name, response_code, status, data) VALUES (%s, %s, %s, %s)"""
+    logger_q = """INSERT script_logger (response_name, response_code, status, data, response_data) VALUES (%s, %s, %s, %s, %s)"""
 
     if testing:
         track_sub_name = 'po_sub_test'
@@ -475,15 +475,15 @@ def manual_overage(request):
             print("----------------------response-------------------------")
             status = response.status_code
             if status == 200:
-                cursor.execute(logger_q, ("manual_po_receipt", 200, "Success", json.dumps(po_receipt_controller, indent=4)))
+                cursor.execute(logger_q, ("manual_po_receipt", 200, "Success", json.dumps(po_receipt_controller, indent=4), None))
                 conn.commit()
             elif status != 200 and container:
                 conn.rollback()
-                cursor.execute(logger_q, ("manual_po_receipt", status, "Failure", json.dumps(response.json(), indent=4)))
+                cursor.execute(logger_q, ("manual_po_receipt", status, "Failure", json.dumps(po_receipt_controller, indent=4), json.dumps(response.json(), indent=4)))
                 conn.commit()
         except Exception as e:
             print(e)
-            cursor.execute(logger_q, ("manual_po_receipt", 500, "Failure", str(e)))
+            cursor.execute(logger_q, ("manual_po_receipt", 500, "Failure", json.dumps(po_receipt_controller, indent=4), f"{e}"))
             conn.commit()
         else:
             if status == 200 and (qty+recqty) >= ostkqty:
