@@ -156,12 +156,7 @@ except ImportError:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # LOGIN_URL = 'HomeApp:login'
-# check OS
-print("os.name: ", os.name)
-if str(os.name) == "nt":
-    # Windows: static/OMSOrderApp to media
-    EXCEL_FILE_PATH = "media/OMSOrderApp"
-else:
-    # Linux
-    # use FTP server to save files
-    EXCEL_FILE_PATH = "srv/files"
+
+# Windows: static/OMSOrderApp to media
+EXCEL_FILE_PATH = "media/OMSOrderApp"
+
