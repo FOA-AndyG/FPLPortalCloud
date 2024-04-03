@@ -56,7 +56,28 @@
         </div>
     </div>
 </form>
-<br>
+<hr>
+<h4>Search</h4>
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-2">
+            <select class="form-control" name="search_select" required>
+                <option value="TrackingNo">TrackingNo</option>
+                <option value="ContainerNo">ContainerNo</option>
+            </select>
+        </div>
+        <div class="col-sm-3">
+            <input class="form-control" id="search_input" name="search_input" type="text" required>
+        </div>
+        <div class="col-sm-2">
+            <button class="btn btn-info btn-block short_loading" type="submit" name="search_btn">
+                Search
+            </button>
+        </div>
+    </div>
+</form>
+
 <hr>
 
 <!-- Content Row -->

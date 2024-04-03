@@ -86,6 +86,14 @@ def get_tracking_detail_data(total_number, location):
     return obj
 
 
+def search_tracking_detail_data(search_select, search_input):
+    if search_select == "ContainerNo":
+        obj = WebScanDetail.objects.filter(trailer_number=search_input)
+    else:
+        obj = WebScanDetail.objects.filter(tracking_number=search_input)
+    return obj
+
+
 def get_eccang_order_data():
     try:
         with ECANGMySQLConnection() as db:
