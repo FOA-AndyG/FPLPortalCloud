@@ -33,8 +33,9 @@
     <table cellspacing="0" class="table table-striped cell-border main_table" id="ostk_po">
         <thead>
             <tr>
-                <th>OSTK PO</th>
+                <th>Receiving Code</th>
                 <th>Warehouse</th>
+                <th>OSTK PO</th>
                 <th># of SKUs</th>
                 <th>Received</th>
                 <th>Total</th>
@@ -47,18 +48,21 @@
             <tr>
                 <td><a href="#" onclick="window.open('{% url 'OSTKApiApp:ostk_po_receipt' item.0 %}','_blank','width=900,height=700'); return false;" target="popup">{{item.0}}</a></td>
                 <td>{{item.1}}</td>
-                <td>{{item.2}}</td>
-                <td>{{item.3|stringformat:"i"}}</td>
+                <td><a href="#" onclick="window.open('{% url 'OSTKApiApp:ostk_po_receipt_ref' item.2 %}','_blank','width=900,height=700'); return false;" target="popup">{{item.2}}</a></td>
+                <td>{{item.3}}</td>
                 <td>{{item.4|stringformat:"i"}}</td>
-                <td>{{item.5}}</td>
-                {% if item.6 == 'C' %}
-                <td>Complete</td>
-                {% elif item.6 == 'L' %}
-                <td>In Progress</td>
-                {% elif item.6 == 'V' %}
-                <td>Overage</td>
-                {% else %}
+                <td>{{item.5|stringformat:"i"}}</td>
                 <td>{{item.6}}</td>
+                {% if item.7 == 'C' %}
+                <td>Complete</td>
+                {% elif item.7 == 'L' %}
+                <td>In Progress</td>
+                {% elif item.7 == 'V' %}
+                <td>Overage</td>
+                {% elif item.7 == 'O' %}
+                <td>Open</td>
+                {% else %}
+                <td>{{item.7}}</td>
                 {% endif %}
             </tr>
             {% endfor %}

@@ -1,0 +1,80 @@
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<style>
+    .toolbar {
+        float:left;
+    }
+    tfoot {
+        display: table-row-group;
+    }   
+</style>
+<title>{{mr}}</title>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+</head>
+<body>
+    <div class="content">
+    <h1>OSTK PO: {{mr}}</h1>
+    <p style="white-space: pre-wrap;">The orange rows shows quantities that does not match the total.&#10;</p>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+    <input name="view_size" id="view_size" value={{view_size}} hidden>
+    <table cellspacing="0" class="table table-striped cell-border main_table display" id="view_po">
+        <thead>
+            <tr>
+                <th>SKU</th>
+                <th>Received</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in view_data %}
+            <tr>
+                <td id="sku{{ forloop.counter }}">{{item.0}}</td>
+                <td id="rec{{ forloop.counter }}">{{item.1}}</td>
+                <td id="tot{{ forloop.counter }}">{{item.2}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</body>
+
+
+
+{% endblock content %}
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var table = $('#view_po').DataTable({
+            autoWidth: true,
+            ordering: false,
+            paging: false,
+            dom: 'l<"toolbar">frtip',
+            initComplete: function () {
+                $("div.toolbar")
+                    .html('<tr><th>');
+            }
+        });
+        for (var i = 1; i <= $("#view_size").val(); i++) {
+            let rec = Number($("#rec" + String(i)).text());
+            let tot = Number($("#tot" + String(i)).text());
+            if (rec != tot) {
+                $("#rec" + String(i)).parent().css("background", "darkorange");
+            }
+        }
+    });
+
+</script>

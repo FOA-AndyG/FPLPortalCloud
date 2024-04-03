@@ -162,6 +162,18 @@ def ostk_po_receipt_popup(request, receiving_code):
     conn.close()
     return render(request, PAGE_PATH + "ostk_po_receipt_popout.html", content)
 
+def ostk_po_receipt_popup_ref(request, master_ref_no):
+    print("po_receipt_popup_ref")
+    conn = mysql_connection()
+    view_data, view_size = ostk_po.get_ref_view(conn, master_ref_no)
+    content = {
+        "mr": master_ref_no,
+        "view_data": view_data,
+        "view_size": view_size
+    }
+    conn.close()
+    return render(request, PAGE_PATH + "ostk_po_receipt_popout_ref.html", content)
+
 def ostk_overages(request):
     if request.method == 'POST' and 'send_overage' in request.POST:
         print("overage")

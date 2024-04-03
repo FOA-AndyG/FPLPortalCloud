@@ -14,5 +14,6 @@ urlpatterns = [
     path("ostk_adj/", views.ostk_adj, name="ostk_adj"),
     path("ostk_sh/", views.ostk_sh, name="ostk_sh"),
     path("ostk_overages/", views.ostk_overages, name="ostk_overages"),
-    path('ostk_po_receipt/<str:receiving_code>/', views.ostk_po_receipt_popup, name="ostk_po_receipt")
+    path('ostk_po_receipt/<str:receiving_code>/', views.ostk_po_receipt_popup, name="ostk_po_receipt"),
+    path('ostk_po_receipt_ref/<str:master_ref_no>/', views.ostk_po_receipt_popup_ref, name="ostk_po_receipt_ref")
 ]
