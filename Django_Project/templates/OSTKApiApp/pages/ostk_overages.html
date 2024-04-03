@@ -1,0 +1,156 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<style>
+    .check_val {
+        display:flex;
+        flex-direction: column;
+    }
+</style>
+
+<head>
+    <title>OSTK Overages Handler</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header" style="display:block !important;">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Receipt Confirmation</h4>
+            </div>
+            <div id="load1" class="loader"></div>
+            <div class="modal-body">
+                <div>
+                    Are you sure?
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <form method="post">
+                    {% csrf_token %}
+                    <input name="wh_code" id="wh_code" hidden>
+                    <input name="ref" id="ref" hidden>
+                    <input name="line_no" id="line_no" hidden>
+                    <input name="sku" id="sku" hidden>
+                    <input name="recqty" id="recqty" hidden>
+                    <input name="ostkqty" id="ostkqty" hidden>
+                    <input name="qty" id="qty" hidden>
+                    <button type="submit" class="btn btn-primary" name="send_overage" id="send_overage">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <h1>OSTK Overages Handler</h1>
+    <br>
+    <div style="white-space: pre-wrap;">This page handles overages as a quantity controller for receiving errors/mistakes.&#10;POs that appear on this page are overages and will need to be fulfilled to OSTK by the manual input.&#10;A placeholder value is provided to assist (can vary by the situation) inside the Manual Input field.&#10;Enter the correct quantity which the OSTK Total Quantity should equate with the Sent Quantity.
+    </div>
+    <br>
+    <!-- this holds the size to display the input placeholder  -->
+    <input hidden id="overage_size" value="{{overage_size}}">
+    <table class="table table-striped cell-border" name="overage_table" id="overage_table">
+        <thead>
+            <tr>
+                <th>Receiving Code</th>
+                <th>Warehouse</th>
+                <th>Reference No</th>
+                <th>SKU</th>
+                <th>Putaway Qty</th>
+                <th>Sent Qty</th>
+                <th>OSTK Total Qty</th>
+                <th hidden>Line No</th>
+                <th>Manual Input</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in overage_data %}
+            <form id="form{{ forloop.counter }}">
+                <tr>
+                    <td id="rc{{ forloop.counter }}">{{item.0}}</td>
+                    <td id="wh{{ forloop.counter }}">{{item.1}}</td>
+                    <td id="ref{{ forloop.counter }}">{{item.2}}</td>
+                    <td id="sku{{ forloop.counter }}">{{item.3}}</td>
+                    <td id="wmsqty{{ forloop.counter }}">{{item.4}}</td>
+                    <td id="recqty{{ forloop.counter }}">{{item.5}}</td>
+                    <td id="ostkqty{{ forloop.counter }}">{{item.6}}</td>
+                    <td hidden><input id="lineno{{ forloop.counter }}" value="{{item.7}}" type="text"></td>
+                    <td class="check_val"><input id="manqty{{ forloop.counter }}" type="number" min="0" style="font-size: 1rem;" required></td>
+                    <td><button type="button" id="submit{{ forloop.counter }}" onclick="pass_overage('{{ forloop.counter }}')">Send</button></td>
+                </tr>
+            </form>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+<script>
+    $.fn.isValid = function(){
+    return this[0].checkValidity()
+    }
+    function pass_overage(indx) {
+        let indx_string = String(indx);
+
+        if ($('#form'+indx_string).isValid() == true) {
+            $('#myModal').modal('toggle');
+            $("#wh_code").val($('#wh'+indx_string).text());
+            $("#ref").val($('#ref'+indx_string).text());
+            $("#line_no").val($('#lineno'+indx_string).val());
+            $("#sku").val($('#sku'+indx_string).text());
+            $("#recqty").val($("#recqty"+indx_string).text());
+            $("#ostkqty").val($("#ostkqty"+indx_string).text());
+            if ($('#manqty'+indx_string+"-error").length == 0) {
+                $("#qty").val($('#manqty'+indx_string).val());
+            }
+            else {
+                $("#qty").val($('#manqty'+indx_string+".error").val());
+            }
+            console.log($("#qty").val());
+        }
+        else {
+            if ($('#manqty'+indx_string+"-error").length == 0) {
+                $('#form'+indx_string).validate().element('#manqty'+indx_string);
+                $(".error").css({'font-size': '1rem', 'width': 'auto'});
+                $('#manqty'+indx_string+"-error.error").css({'color': 'red'});
+            }
+        }
+    }
+
+    function check_form(indx) {
+        let indx_string = String(indx);
+        $('#manqty'+indx_string).isValid();
+    }
+
+    $(document).ready(function() { 
+        let size = Number($("#overage_size").val());
+        var indx = 1;
+        while(indx <= size) {
+            let tot = Number($("#ostkqty"+indx).text());
+            let rced = Number($("#recqty"+indx).text());
+            $("#manqty"+indx).attr("placeholder", tot-rced);
+            indx += 1;
+        }
+    });
+</script>
+{% endblock scripts %}

@@ -243,6 +243,7 @@ def web_scan_report(request):
     if not check_login_status(request):
         return redirect("HomeApp:login")
     location = get_session_user_location(request)
+
     warehouse_code_map = {
         "FPL": 7,
         "TX": 11,
@@ -288,6 +289,11 @@ def web_scan_report(request):
     content["overall_picking_list"] = over_all_list
 
     content["display_data"] = get_tracking_detail_data(5000, location)
+
+    if request.method == "POST" and 'search_btn' in request.POST:
+        search_select = request.POST.get('search_select')
+        search_input = request.POST.get('search_input')
+        content["display_data"] = search_tracking_detail_data(search_select, search_input)
 
     return render(request, PAGE_PATH + "web_scan_report.html", content)
 

@@ -1,0 +1,58 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<title>OSTK PO Import</title>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<div class="content">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <div class="container-fluid">
+          <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="True">&times;</span>
+            </button>
+            {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <h1>OSTK PO Import</h1>
+    <div style="white-space: pre-wrap;">Import the container information excel sent from OSTK.&#10;This is required for POs to enter the WMS and to prep the receiving stage.&#10;It is advised that the information should be imported before the ETA date in the excel or else it does not import.&#10;There will be a result message in the top of the page whether the excel has been imported successfully, partially, or failed.&#10;</div>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+
+    <h3>Import OSTK PO excel</h3>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="float:left">
+            <input class="form-control" name="import_file_path" required type="file"
+                   accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+        </div>
+        <div style="float:left; margin-left: 5px;">
+            <button class="btn btn-primary btn-block loading" name="import_button" type="submit"
+            data-loading-text="<i class='fas fa-sync fa-spin'></i> Importing...">
+                <i class="fas fa-cloud-upload-alt"></i>Import
+            </button>
+        </div>
+    </form>
+<!--    <form method="get" enctype="multipart/form-data">-->
+<!--        <div class="col-sm-1" style="float:left;">-->
+<!--            <button class="btn btn-primary btn-block" name="export_button" type="submit">-->
+<!--                <i class="fas fa-download"></i>Export-->
+<!--            </button>-->
+<!--        </div>-->
+<!--    </form>-->
+</div>
+
+{% endblock content %}

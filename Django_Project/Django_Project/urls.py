@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('Django_apps.HomeApp.urls')),
     path('OMSOrderApp/', include('Django_apps.OMSOrderApp.urls')),
+    path('OSTKApiApp/', include('Django_apps.OSTKApiApp.urls')),
 ]

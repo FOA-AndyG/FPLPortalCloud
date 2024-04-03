@@ -1,0 +1,106 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<style>
+    .nav>li>a {
+        position: relative !important; 
+        display: block !important;
+        padding: 10px 15px !important;
+    }
+    .active {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-bottom-color: transparent;
+    }
+</style>
+
+<title>FPL OSTK WH Inventory</title>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<div class="content">
+    <h1>FPL OSTK WH Inventory</h1>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+
+    <ul class="nav nav-tabs" style="margin-bottom: 5px;">
+        <li class="active" id="menutab1"><a data-toggle="tab" href="#menu1">TX</a></li>
+        <li id="menutab2"><a data-toggle="tab" href="#menu2">LAX</a></li>
+    </ul>
+    <div class="tab-content">
+        {% for key, value in content.items %}
+            {% if forloop.first %}
+            <div id="menu{{forloop.counter}}" class="tab-pane fade in active show">
+            {% else %}
+            <div id="menu{{forloop.counter}}" class="tab-pane fade">
+            {% endif %}
+                <table cellspacing="0" class="table table-striped cell-border main_table" id="ostk_inv{{forloop.counter}}">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Product Description</th>
+                            <th>Available</th>
+                            <th>Reserved</th>
+                            <th>Sold</th>
+                            <th>Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in value %}
+                    <tr>
+                        <td>{{item.0}}</td>
+                        <td>{{item.1}}</td>
+                        <td>{{item.2}}</td>
+                        <td>{{item.3}}</td>
+                        <td>{{item.4}}</td>
+                        <td>{{item.5}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+
+<!-- <script type="text/javascript">
+$(document).ready(function() {
+     $('.main_table').DataTable({
+        autoWidth: true,
+        order: [0, "asc"],
+        dom: 'Bfrtip',
+        lengthMenu: [[ 25, 50, 100, -1], [ '25 rows', '50 rows', '100 rows', 'Show all' ]],
+        buttons: [
+        {extend:'pageLength', className: 'btn btn-default'},
+        {extend:'colvis', className: 'btn btn-default'},
+        {
+            extend:'excel',
+            title:'OSTK-products',
+            autoFilter: true,
+            className: 'btn btn-default',
+            sheetName: 'OSTK_products',
+            exportOptions:{columns: ':visible:not(.notexport)'}},
+        ],
+     });
+});
+
+</script> -->
+{% block scripts %}
+<script>
+    $('li').on("click", function(){
+        var href = $(this).attr('href');
+        console.log(href);
+        if (href != "menu1") {
+            $('#menutab1').removeClass("active");
+        }
+    });
+</script>
+{% endblock scripts %}

@@ -1,0 +1,72 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<style>
+    .nav>li>a {
+        position: relative !important; 
+        display: block !important;
+        padding: 10px 15px !important;
+    }
+    .active {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-bottom-color: transparent;
+    }
+</style>
+
+<title>OSTK PO Receipts</title>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<div class="content">
+    <h1>OSTK PO Receipts</h1>
+    <p style="white-space: pre-wrap;">This page shows the statuses of the POs that has been entered in the WMS.&#10;Clicking the receiving code will open a pop-up of it's reference numbers, SKUs, and quanities.&#10;</p>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+    <table cellspacing="0" class="table table-striped cell-border main_table" id="ostk_po">
+        <thead>
+            <tr>
+                <th>Receiving Code</th>
+                <th>Warehouse</th>
+                <th>OSTK PO</th>
+                <th># of SKUs</th>
+                <th>Received</th>
+                <th>Total</th>
+                <th>Update Time</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in po_data %}
+            <tr>
+                <td><a href="#" onclick="window.open('{% url 'OSTKApiApp:ostk_po_receipt' item.0 %}','_blank','width=900,height=700'); return false;" target="popup">{{item.0}}</a></td>
+                <td>{{item.1}}</td>
+                <td><a href="#" onclick="window.open('{% url 'OSTKApiApp:ostk_po_receipt_ref' item.2 %}','_blank','width=900,height=700'); return false;" target="popup">{{item.2}}</a></td>
+                <td>{{item.3}}</td>
+                <td>{{item.4|stringformat:"i"}}</td>
+                <td>{{item.5|stringformat:"i"}}</td>
+                <td>{{item.6}}</td>
+                {% if item.7 == 'C' %}
+                <td>Complete</td>
+                {% elif item.7 == 'L' %}
+                <td>In Progress</td>
+                {% elif item.7 == 'V' %}
+                <td>Overage</td>
+                {% elif item.7 == 'O' %}
+                <td>Open</td>
+                {% else %}
+                <td>{{item.7}}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}
