@@ -296,6 +296,8 @@ def manual_shortship(request):
     conn = mysql_connection()
     cursor = conn.cursor()
     testing = False
+    current_date_obj = datetime.datetime.now()
+    current_date = current_date_obj.strftime("%Y-%m-%d %H:%M:%S")
 
     if testing:
         order_record_name = 'orders_record_test'
@@ -327,7 +329,7 @@ def manual_shortship(request):
                 "warehouseSku": item[0],
                 "orderQuantity": item[1]
             }) #append dictionary
-            q2 = f"""UPDATE {order_record_name} SET status = 'H' WHERE master_ref_no = '{master_ref_no}' and item = '{item[0]}'"""
+            q2 = f"""UPDATE {order_record_name} SET status = 'H', latest_shipdate = '{current_date_obj}' WHERE master_ref_no = '{master_ref_no}' and item = '{item[0]}'"""
             cursor.execute(q2)
 
         shipconfirm_controller = {
