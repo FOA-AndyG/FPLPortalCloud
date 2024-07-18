@@ -1,5 +1,7 @@
 import asyncio
 import datetime
+import re
+import time
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -9,7 +11,9 @@ import json
 # Create your views here.
 from Django_apps.HomeApp.functions.session_function import check_login_status, get_session_user, get_client_ip, \
     get_session_user_location
+from Django_apps.OMSOrderApp.api_handler.fedex_api import *
 from Django_apps.OMSOrderApp.export_function.download_attachment import get_picking_list_no_db
+from Django_apps.OMSOrderApp.export_function.ils_order_import import ils_order_process_function
 
 from Django_apps.OMSOrderApp.picking_functions.scan_support_functions import *
 from Django_apps.OMSOrderApp.reports.direct_sale_pricing_functions import *
@@ -298,6 +302,28 @@ def web_scan_report(request):
     return render(request, PAGE_PATH + "web_scan_report.html", content)
 
 
+# Andy add: 03/17/2024
+def fpl_ils_order_process(request):
+    print("fpl_ils_order_process")
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+
+    content = {
+        "title": "FPL & ILS Order Process",
+        "page_head": "FPL & ILS Order Process",
+    }
+
+    if request.method == "POST" and 'import_button' in request.POST:
+        print("import_btn")
+        result_dict = ils_order_process_function(request)
+        if result_dict["result"]:
+            return result_dict["response"]
+        else:
+            messages.warning(request, result_dict["msg"])
+
+    return render(request, PAGE_PATH + "fpl_ils_order_process.html", content)
+
+
 # Andy: test picking function
 def picking_page(request):
     print("picking_page")
@@ -321,3 +347,59 @@ def picking_page(request):
     # show current_pending_picking_list with current progress
 
     return render(request, PAGE_PATH + "picking_page.html", content)
+
+
+def fedex_tracking_status_checking(request):
+    print("fedex_tracking_status_checking")
+    content = {
+        "title": "FedEX Tracking Status",
+        "page_head": "FedEX Tracking Status",
+    }
+
+    if request.method == "POST" and 'import_button' in request.POST:
+        print("import_button clicked")
+        start_time = time.time()
+        #  1. get excel file from user upload
+        excel_file = request.FILES.get('vc_excel')
+        try:
+            print("# 2. Reading the excel file using Pandas")
+            df = pd.read_excel(excel_file)
+
+            print("# 3. Checking if the '跟踪号' column exists")
+            if '跟踪号' not in df.columns:
+                messages.warning(request, "Excel file does not contain '跟踪号' column.")
+            else:
+                df['跟踪号'] = df['跟踪号'].astype(str)
+                print("# 4. Check for errors and print messages including row index")
+                df['tracking_valid'] = df['跟踪号'].apply(lambda x: 1 if is_valid_fedex_tracking_number(x) else 0)
+                errors = df[df['tracking_valid'] == 0]
+                if not errors.empty:
+                    messages.warning(request, "Error: Invalid tracking numbers found:")
+                    for index, row in errors.iterrows():
+                        messages.warning(request, f"Row ID: {index} - Invalid Tracking Number: {row['跟踪号']}")
+                else:
+                    print("# 5. get fedex api to check tracking number")
+                    fedex_api = FedExTrackingApp(False)
+                    fedex_token_response = fedex_api.get_access_token()
+                    if fedex_token_response["success"]:
+                        api_token = fedex_token_response["msg"]
+                        print("# 6. Iterate over the DataFrame and print the tracking numbers")
+                        df['tracking_status'] = df['跟踪号'].apply(lambda x: fedex_api.get_fedex_status(api_token, x))
+                        print("# 7. download the new excel file.")
+                        response = HttpResponse(
+                            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                        response[
+                            'Content-Disposition'] = f"attachment; filename=tracking_status_result.xlsx"
+                        df.to_excel(response, index=False)
+                        end_time = time.time()
+                        duration = end_time - start_time
+                        print(f"The function took {duration} seconds to complete.")
+                        messages.success(request, "Success: Tracking status result excel file has been downloaded.")
+                        response.set_cookie('fileDownload', 'true', max_age=1200)  # Set cookie, expire in 10 minutes
+                        return response
+                    else:
+                        messages.warning(request, f"Error: {fedex_token_response['msg']}")
+        except Exception as e:
+            messages.warning(request, f"Error processing file: {e}")
+
+    return render(request, PAGE_PATH + "fedex_tracking_status_checking.html", content)

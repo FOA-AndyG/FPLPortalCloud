@@ -28,7 +28,8 @@ urlpatterns = [
 
     path('pdf_merge_page/', views.pdf_merge_page, name='pdf_merge_page'),
     # path('storage_fee_calculator/', views.storage_fee_calculator, name='storage_fee_calculator'),
-
+    path('fpl_ils_order_process/', views.fpl_ils_order_process, name='fpl_ils_order_process'),
+    path('fedex_tracking_status_checking/', views.fedex_tracking_status_checking, name='fedex_tracking_status_checking'),
 
     # scan program
     path('web_scan_page/', views.web_scan_page, name='web_scan_page'),
@@ -38,7 +39,6 @@ urlpatterns = [
     path('web_scan_report/', views.web_scan_report, name='web_scan_report'),
     path('web_scan_checking_page/', views.web_scan_checking_page, name='web_scan_checking_page'),
     path('web_scan_printing_page/', views.web_scan_printing_page, name='web_scan_printing_page'),
-
     # url(r'^web_scan_wrong_tracking_page/(?P<tracking>\d+)$', views.web_scan_wrong_tracking_page,
     #     name='web_scan_wrong_tracking_page'),
 

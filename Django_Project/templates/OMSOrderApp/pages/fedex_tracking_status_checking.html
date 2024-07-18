@@ -1,0 +1,108 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Content Row -->
+<div class="row">
+    <p>* Please do not upload more than 1500 tracking numbers each time.</p>
+    <!-- Content Column -->
+    <div class="col-md-10">
+        <form enctype="multipart/form-data" method="post" onsubmit="openLoader()">
+            {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-sm-6">
+                    <label>Select a file to import/选择文件:</label>
+                    <input class="form-control" name="vc_excel" type="file">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-block" name="import_button" type="submit">
+                        <i class="fas fa-cloud-upload-alt"></i> Import/上传
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Loading Modal -->
+<div id="loadingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1050; align-items: center; justify-content: center;">
+    <div style="text-align: center;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p class="text-light mt-3">Loading...</p>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // showToast('* Please do not upload more than 1500 tracking numbers each time.');
+});
+
+function openLoader() {
+    document.getElementById("loadingModal").style.display = "flex";
+    checkDownloadCookie();
+}
+
+function checkDownloadCookie() {
+    let checkInterval = setInterval(function() {
+        if (document.cookie.indexOf('fileDownload=true') != -1) {
+            clearInterval(checkInterval);
+            document.getElementById("loadingModal").style.display = "none";
+            // Clear the cookie immediately after detecting it
+            document.cookie = "fileDownload=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+            // showToast("Download Success!");
+
+            // Refresh the current page
+            window.location.reload();
+        }
+    }, 1000); // Check every second
+}
+
+// Example of using Bootstrap Toast for a more integrated notification
+function showToast(message) {
+    var toastHTML = `<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="false" style="min-width: 300px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;">
+        <div class="toast-header">
+            <strong class="mr-auto">Notification</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body">${message}</div>
+    </div>`;
+    var toastEl = document.createElement('div');
+    toastEl.innerHTML = toastHTML;
+    document.body.appendChild(toastEl.firstChild);
+    $('.toast').toast('show');
+}
+
+</script>
+
+{% endblock scripts %}
