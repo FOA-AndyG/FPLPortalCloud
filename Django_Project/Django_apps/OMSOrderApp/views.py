@@ -386,10 +386,8 @@ def fedex_tracking_status_checking(request):
                         print("# 6. Iterate over the DataFrame and print the tracking numbers")
                         df['tracking_status'] = df['跟踪号'].apply(lambda x: fedex_api.get_fedex_status(api_token, x))
                         print("# 7. download the new excel file.")
-                        response = HttpResponse(
-                            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-                        response[
-                            'Content-Disposition'] = f"attachment; filename=tracking_status_result.xlsx"
+                        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                        response['Content-Disposition'] = f"attachment; filename=tracking_status_result.xlsx"
                         df.to_excel(response, index=False)
                         end_time = time.time()
                         duration = end_time - start_time
