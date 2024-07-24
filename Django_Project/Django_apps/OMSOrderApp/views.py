@@ -391,8 +391,8 @@ def fedex_tracking_status_checking(request):
                         df.to_excel(response, index=False)
                         end_time = time.time()
                         duration = end_time - start_time
-                        print(f"The function took {duration} seconds to complete.")
-                        messages.success(request, "Success: Tracking status result excel file has been downloaded.")
+                        messages.success(request, f"Success: Tracking status result excel file has been downloaded. "
+                                                  f"The function took {duration} seconds to complete.")
                         response.set_cookie('fileDownload', 'true', max_age=1200)  # Set cookie, expire in 10 minutes
                         return response
                     else:
