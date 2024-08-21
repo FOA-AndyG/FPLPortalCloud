@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+from datetime import timedelta
 import re
 import time
 
@@ -401,3 +402,87 @@ def fedex_tracking_status_checking(request):
             messages.warning(request, f"Error processing file: {e}")
 
     return render(request, PAGE_PATH + "fedex_tracking_status_checking.html", content)
+
+
+def ecang_order_dashboard_page(request):
+    print("ecang_order_dashboard_page")
+    content = {
+        "title": "Order Dashboard",
+        "page_head": "Order Dashboard",
+    }
+    try:
+        recent_date = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
+        with ECANGMySQLConnection() as db:
+            sql = f"""
+                SELECT o.order_code
+                    , o.order_status
+                    , o.sm_code
+                    , o.parcel_quantity
+                    , s.tracking_number
+                    , o.update_time
+                    , o.remark
+                FROM orders o
+                LEFT JOIN ship_order s ON o.order_id=s.order_id
+                WHERE o.warehouse_id = 7
+                    AND o.order_status IN (5,6,7)
+                    AND o.update_time > "{recent_date}"
+                """
+            df = db.read_sql_to_dataframe(sql)
+            df['tracking_number'] = df['tracking_number'].astype(str)
+            df["tracking_number"] = df["tracking_number"].str.replace(' ', '')
+
+            # Calculate statistics
+            small_parcel_df = df[df['parcel_quantity'] == 1]
+            ltl_order_df = df[df['parcel_quantity'] > 1]
+
+            small_parcel_total_orders = len(small_parcel_df)
+            small_parcel_total_quantity = small_parcel_df['parcel_quantity'].sum()
+
+            ltl_order_total_orders = len(ltl_order_df)
+            ltl_order_total_quantity = ltl_order_df['parcel_quantity'].sum()
+
+            # UPS Orders
+            ups_df = small_parcel_df[
+                (small_parcel_df['sm_code'].str.contains("UPS")) |
+                ((small_parcel_df['sm_code'] == "FDW_NO_LABEL") & small_parcel_df['tracking_number'].str.startswith(
+                    "1Z"))
+                ]
+            ups_total_orders = len(ups_df)
+            ups_total_quantity = ups_df['parcel_quantity'].sum()
+
+            # FEDEX Orders
+            fedex_df = small_parcel_df[
+                (small_parcel_df['sm_code'].str.contains("FEDEX")) |
+                ((small_parcel_df['sm_code'] == "FDW_NO_LABEL") & small_parcel_df['tracking_number'].str.len() == 12)
+                ]
+            fedex_total_orders = len(fedex_df)
+            fedex_total_quantity = fedex_df['parcel_quantity'].sum()
+
+            content.update({
+                "small_parcel_total_orders": small_parcel_total_orders,
+                "small_parcel_total_quantity": small_parcel_total_quantity,
+                "ltl_order_total_orders": ltl_order_total_orders,
+                "ltl_order_total_quantity": ltl_order_total_quantity,
+                "ups_total_orders": ups_total_orders,
+                "ups_total_quantity": ups_total_quantity,
+                "fedex_total_orders": fedex_total_orders,
+                "fedex_total_quantity": fedex_total_quantity,
+                "other_order_quantity": small_parcel_total_quantity-fedex_total_orders-ups_total_quantity,
+                "current_datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            })
+    except Exception as e:
+        print(e)
+        messages.warning(request, f"Error: {e}")
+        content.update({
+            "small_parcel_total_orders": 0,
+            "small_parcel_total_quantity": 0,
+            "ltl_order_total_orders": 0,
+            "ltl_order_total_quantity": 0,
+            "ups_total_orders": 0,
+            "ups_total_quantity": 0,
+            "fedex_total_orders": 0,
+            "fedex_total_quantity": 0,
+            "other_order_quantity": 0,
+            "current_datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    return render(request, PAGE_PATH + "ecang_order_dashboard_page.html", content)

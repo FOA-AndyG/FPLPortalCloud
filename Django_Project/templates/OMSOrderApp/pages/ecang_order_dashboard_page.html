@@ -1,0 +1,144 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+<style>
+    .card {
+        width: 100%;
+        height: 400px; /* Adjust the height to make the cards larger */
+    }
+
+    .card-body {
+        font-size: 3.0rem; /* Larger font for better visibility */
+    }
+
+    .card .h5, .card .h6 {
+        font-size: 3.5rem; /* Even larger for the numbers */
+    }
+
+    .row {
+        margin-bottom: 20px; /* Add spacing between rows */
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+<hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+
+
+<!-- Content -->
+<h1>Total Box Need To Ship</h1>
+<h3>Current Date and Time: {{ current_datetime }}</h3>
+
+<div class="row">
+    <!-- Total FEDEX Orders (Box) Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-lg font-weight-bold text-warning text-uppercase mb-1">
+                            FEDEX Orders (Box)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ fedex_total_quantity }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-box fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total UPS Orders (Box) Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-lg font-weight-bold text-info text-uppercase mb-1">
+                            UPS Orders (Box)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ ups_total_quantity }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-box fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Other Orders (Box) Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-lg font-weight-bold text-info text-uppercase mb-1">
+                            Other Orders (Box)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ other_order_quantity }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-box fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+
+<div class="row">
+    <!-- Total LTL Orders (Box) Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-lg font-weight-bold text-success text-uppercase mb-1">
+                            Total LTL Orders (Box)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ ltl_order_total_quantity }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-truck fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr style="height:2px;border-width:0;color:gray;background-color:gray;">
+
+
+
+
+{% endblock content %}
+
+<!-- JavaScript -->
+{% block scripts %}
+<script>
+    // Refresh the page every 10 minutes (600000 milliseconds)
+    setTimeout(function() {
+        location.reload();
+    }, 600000); // 10 minutes in milliseconds
+</script>
+{% endblock scripts %}
+

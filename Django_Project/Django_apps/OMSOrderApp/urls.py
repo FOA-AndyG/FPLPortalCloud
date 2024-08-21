@@ -32,6 +32,7 @@ urlpatterns = [
     path('fedex_tracking_status_checking/', views.fedex_tracking_status_checking, name='fedex_tracking_status_checking'),
 
     # scan program
+    path('ecang_order_dashboard_page/', views.ecang_order_dashboard_page, name='ecang_order_dashboard_page'),
     path('web_scan_page/', views.web_scan_page, name='web_scan_page'),
     path('web_scan_detail_page/<str:trailer_number>', views.web_scan_detail_page, name='web_scan_detail_page'),
     path('web_scan_function/', views.web_scan_function, name='web_scan_function'),
