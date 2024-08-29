@@ -1,0 +1,242 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+
+<hr>
+
+<div class="row">
+    <div class="container-fluid">
+
+        <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="pending-orders-tab" data-toggle="tab" href="#pending-orders" role="tab" aria-controls="pending-orders" aria-selected="true">
+                    Pending Ticket
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="finished-orders-tab" data-toggle="tab" href="#finished-orders" role="tab" aria-controls="finished-orders" aria-selected="false">
+                    Delivered Ticket
+                </a>
+            </li>
+        </ul>
+
+
+        <div class="tab-content" id="orderTabsContent">
+            <!-- pending order tab -->
+            <div class="tab-pane fade show active" id="pending-orders" role="tabpanel" aria-labelledby="pending-orders-tab">
+                <!-- DataTable for Pending Orders -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <form enctype="multipart/form-data" method="post">
+                                {% csrf_token %}
+                                <table class="table table-bordered report_table" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            {% for column in display_columns %}
+                                            <th>{{ column }}</th>
+                                            {% endfor %}
+                                            {% if request.session.seller_name == "FPL" %}
+                                            <th>Label</th>
+                                            <th>Action</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in display_data_pending %}
+                                        <tr>
+                                            <td>{{ r.create_time|date:'Y-m-d H:i:s'|default_if_none:"" }}</td>
+                                            <td>
+                                                <a href="#" class="tracking-detail-link btn btn-info btn-block btn-sm mb-1"
+                                                   data-tracking-code="{{ r.tracking_code }}">
+                                                    {{ r.tracking_code }}
+                                                </a>
+                                            </td>
+                                            <td>{{ r.seller_name }}</td>
+                                            <td>{{ r.seller_order_id }}</td>
+                                            {% if request.session.seller_name == "FPL" %}
+                                            <td>
+                                                <a data-target="#status_modal" data-toggle="modal"
+                                                   class="btn btn-info btn-block btn-sm mb-1 status-update-link"
+                                                   href="#" data-tracking-code="{{ r.tracking_code }}">
+                                                   {{ r.order_status }}
+                                                </a>
+                                            </td>
+                                            {% else %}
+                                            <td>
+                                                {{ r.order_status }}
+                                            </td>
+                                            {% endif %}
+                                            <td>{{ r.order_type }}</td>
+                                            <td>{{ r.recipient_name }}</td>
+                                            <td>{{ r.recipient_phone }}</td>
+                                            <td>{{ r.recipient_address1 }} {{ r.recipient_address2 }}, {{ r.recipient_city }}, {{ r.recipient_state }} {{ r.recipient_zipcode }}</td>
+                                            <td>{{ r.recipient_address_type }}</td>
+                                            <td>{{ r.pickup_warehouse }}</td>
+                                            <td>
+                                                <a href="#" class="order-product-link btn btn-info btn-block btn-sm mb-1"
+                                                   data-tracking-code="{{ r.tracking_code }}">
+                                                    ViewDetails
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="fee-detail-link btn btn-info btn-block btn-sm mb-1"
+                                                   data-tracking-code="{{ r.tracking_code }}">
+                                                    FeeDetail
+                                                </a>
+                                            </td>
+                                            {% if request.session.seller_name == "FPL" %}
+                                            <td>
+                                                <button type="button" name="box_btn"
+                                                        class="btn btn-primary btn-block btn-sm mb-1 box_label_download_btn"
+                                                        data-id="{{r.tracking_code}}">
+                                                    <i class="fas fa-cloud-download-alt"></i>Box Label
+                                                </button>
+                                                <button type="button" name="bol_btn"
+                                                        class="btn btn-primary btn-block btn-sm mb-1 delivery_bol_download_btn"
+                                                        data-id="{{r.tracking_code}}">
+                                                    <i class="fas fa-cloud-download-alt"></i>BOL
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-info btn-sm"
+                                                   onclick="window.open('{% url 'OrderApp:order_date_update_page' r.tracking_code %}','_blank','width=2000,height=800'); return false;"
+                                                   target="popup"><i class="fas fa-edit"></i> Date Update
+                                                </a>
+                                            </td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivered order tab -->
+            <div class="tab-pane fade" id="finished-orders" role="tabpanel" aria-labelledby="finished-orders-tab">
+                <!-- DataTable for Finished Orders -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <table class="table table-bordered report_table" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            {% for column in display_columns %}
+                                            <th>{{ column }}</th>
+                                            {% endfor %}
+                                            <th>Attachment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in display_data_finished %}
+                                        <tr>
+                                            <td>{{ r.create_time|date:'Y-m-d H:i:s'|default_if_none:"" }}</td>
+                                            <td>
+                                                <a href="#" class="tracking-detail-link btn btn-info btn-block btn-sm mb-1"
+                                                   data-tracking-code="{{ r.tracking_code }}">
+                                                    {{ r.tracking_code }}
+                                                </a>
+                                            </td>
+                                            <td>{{ r.seller_name }}</td>
+                                            <td>{{ r.seller_order_id }}</td>
+                                            <td>{{ r.order_status }}</td>
+                                            <td>{{ r.order_type }}</td>
+                                            <td>{{ r.recipient_name }}</td>
+                                            <td>{{ r.recipient_phone }}</td>
+                                            <td>{{ r.recipient_address1 }} {{ r.recipient_address2 }}, {{ r.recipient_city }}, {{ r.recipient_state }} {{ r.recipient_zipcode }}</td>
+                                            <td>{{ r.recipient_address_type }}</td>
+                                            <td>{{ r.pickup_warehouse }}</td>
+                                            <td>
+                                                <a href="#" class="order-product-link btn btn-info btn-block btn-sm mb-1"
+                                                   data-tracking-code="{{ r.tracking_code }}">
+                                                    ViewDetails
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="fee-detail-link btn btn-info btn-block btn-sm mb-1"
+                                                   data-tracking-code="{{ r.tracking_code }}">
+                                                    FeeDetail
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if r.attachmentpath is None %}
+                                                <label>Select Images/PDF to upload:</label>
+                                                <input class="form-control" name="import_files{{r.tracking_code}}"
+                                                       type="file" multiple
+                                                       accept="image/jpeg,image/png,application/pdf,image/x-eps">
+                                                <br>
+                                                <button class="btn btn-info btn-block" name="upload_button" type="submit"
+                                                        value="{{r.tracking_code}}">
+                                                    <i class="fas fa-cloud-upload-alt"></i>Upload
+                                                </button>
+                                                {% else %}
+                                                <label>Download Attachment:</label>
+                                                {% for item in r.attachmentpath %}
+                                                <p>file {{forloop.counter}}: {{ item|slice:'-3:' }}</p>
+                                                {% endfor %}
+                                                <button class="btn btn-info btn-block" name="download_button" type="button"
+                                                        value="{{r.tracking_code}}">
+                                                    <i class="fas fa-cloud-download-alt"></i>Download
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+
+<!-- JavaScript -->
+{% block scripts %}
+
+<script>
+$(document).ready(function () {
+
+
+
+});
+</script>
+
+{% endblock scripts %}
+

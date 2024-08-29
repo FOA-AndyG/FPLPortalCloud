@@ -21,4 +21,5 @@ urlpatterns = [
     path('', include('Django_apps.HomeApp.urls')),
     path('OMSOrderApp/', include('Django_apps.OMSOrderApp.urls')),
     path('OSTKApiApp/', include('Django_apps.OSTKApiApp.urls')),
+    path('TicketApp/', include('Django_apps.TicketApp.urls')),
 ]
