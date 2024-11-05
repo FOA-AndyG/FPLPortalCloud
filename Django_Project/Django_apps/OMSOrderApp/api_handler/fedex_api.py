@@ -1,3 +1,4 @@
+import json
 import re
 
 import requests
@@ -59,6 +60,11 @@ class FedExTrackingApp:
             print(f"Checking: {tracking_number}")
             if response.status_code == 200:
                 tracking_response = response.json()
+
+                # Writing tracking_response to sample.json
+                # with open('sample.json', 'w') as f:
+                #     json.dump(tracking_response, f, indent=4)
+
                 if tracking_response.get('output', {}).get('completeTrackResults'):
                     tracking_status = tracking_response['output']['completeTrackResults'][0]['trackResults'][0]['latestStatusDetail']['description']
                     return tracking_status
