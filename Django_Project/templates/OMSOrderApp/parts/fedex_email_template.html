@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h3>Dear all,</h3>
+    <h4>Please find below table for Trailers Pickup Details, thanks!</h4>
+    <table>
+        <thead>
+            <tr>
+                {% for key in data.0.keys %}
+                <th>{{ key|title }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                {% for value in row.values %}
+                <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>Best regards,</p>
+        <p>William Wu<br>
+        Assistant Senior VP<br>
+        Furniture Pros Logistics Solution</p>
+
+        <div class="address">
+            <strong>California:</strong><br>
+            20632 Currier Rd,<br>
+            Walnut, CA 91789<br>
+            Office: (626) 387-3339
+        </div>
+        <div class="address">
+            <strong>New Jersey:</strong><br>
+            100 Industrial Dr #100,<br>
+            Jersey City, NJ 07305<br>
+            Office: (551) 257-5591
+        </div>
+    </footer>
+
+</body>
+</html>

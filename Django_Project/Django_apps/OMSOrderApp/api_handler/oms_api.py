@@ -1,6 +1,9 @@
+from copy import deepcopy
+
 from zeep import Client, Settings
 from bs4 import BeautifulSoup
 import json
+from datetime import datetime, timedelta
 
 from Django_apps.OMSOrderApp.customer_handler.customer_account import *
 
@@ -339,3 +342,126 @@ def run_test():
 # run_test()
 # check_product_inventory("FPTEST", "CM3246PC123", "FPWH1")
 # check_product_inventory("MTI", "MTI-311008003", "FURNITUREPROWH")
+
+
+def createProduct(df, customer_api_key):
+    settings = Settings(strict=False, xml_huge_tree=True)
+    wsdl = 'http://oms.furnitureproslogistics.com/default/svc/wsdl'
+    client = Client(wsdl, settings=settings)
+
+    # using CFSFPL1 account API key
+    data_dict = {
+        "appToken": customer_api_key.get("appToken"),
+        "appKey": customer_api_key.get("appKey"),
+        "service": "createProduct",
+    }
+
+    product_map = {
+        "WM90L-895HT": [800, 234, 234, 89],
+        "TM90-1000": [1000, 224, 101, 224],
+        "WM90L-1346HT": [1300, 229, 229, 135],
+    }
+    products = []  # To store valid products
+
+    for index, row in df.iterrows():
+        product_object = product_map.get(row["Item"])
+        if not product_object:
+            return {"status": "error", "message": f"Product Item {row['Item']} not found in product_map."}
+
+        product = {
+            "product_sku": row["BarCode"],
+            "product_title": row["ContainerNo"] + "-" + row["Item"],
+            "product_weight": product_object[0],
+            "product_length": product_object[1],
+            "product_width": product_object[2],
+            "product_height": product_object[3],
+            "product_declared_value": "1000",
+            "product_declared_name": "roll",
+            "verify": 1,
+        }
+        products.append(deepcopy(product))  # Collect product data for later API request
+
+    for product in products:
+        paramsJson = json.dumps(product)
+        data_dict["paramsJson"] = paramsJson
+        with client.settings(raw_response=True):
+            response = client.service.callService(**data_dict)
+            soup = BeautifulSoup(response.text, 'xml')
+            ns1 = soup.find("ns1:callServiceResponse")
+            if ns1:
+                resp = ns1.find("response")
+                if resp:
+                    parsed = json.loads(resp.text)
+                    # Log each product's API response
+                    print(parsed)
+                    if parsed.get("ask") != "Success":
+                        error_message = parsed.get("Error", {}).get("errMessage")
+                        return {"status": "error", "message": f"Error: {error_message}"}
+                else:
+                    error_message = parsed.get("Error", {}).get("errMessage")
+                    return {"status": "error", "message": f"Error creating receiving order: {error_message}"}
+            else:
+                return {"status": "error", "message": "Service response not found in the server reply."}
+    return {"status": "success", "message": "Products created successfully."}
+
+
+def createReceivingOrder(df, customer_api_key):
+    settings = Settings(strict=False, xml_huge_tree=True)
+    wsdl = 'http://oms.furnitureproslogistics.com/default/svc/wsdl'
+    client = Client(wsdl, settings=settings)
+
+    # using CFSFPL1 account API key
+    data_dict = {
+        "appToken": customer_api_key.get("appToken"),
+        "appKey": customer_api_key.get("appKey"),
+        "service": "createAsn",
+    }
+
+    items = []
+    for index, row in df.iterrows():
+        item = {
+            "product_sku": row["BarCode"],
+            "quantity": 1,  # Adjust quantity based on your requirements
+            "box_no": 1,  # Adjust box number based on your requirements
+        }
+        items.append(item)
+
+    eta_time = datetime.now() + timedelta(days=1)
+    eta_date = eta_time.strftime("%Y-%m-%d")
+    paramsJson = {
+        "reference_no": df.iloc[0]["ContainerNo"],  # Use the first row's ContainerNo as reference_no
+        "warehouse_code": "FPWH1",                 # Replace with appropriate warehouse code
+        "tracking_number": df.iloc[0]["ContainerNo"],  # Use the first row's ContainerNo as tracking_number
+        "eta_date": eta_date,  # Replace with appropriate ETA date
+        "container_type": "40HQ",
+        "items": items,
+        "verify": 1,
+    }
+
+    data_dict["paramsJson"] = json.dumps(paramsJson)
+
+    with client.settings(raw_response=True):
+        response = client.service.callService(**data_dict)
+        # print(response.text)
+
+        soup = BeautifulSoup(response.text, 'xml')
+
+        ns1 = soup.find("ns1:callServiceResponse")
+        if ns1:
+            resp = ns1.find("response")
+            if resp:
+                parsed = json.loads(resp.text)
+                print(parsed)
+                receiving_code = parsed.get("data", {}).get("receiving_code")
+                if receiving_code:
+                    return {"status": "success", "message": f"Receiving order {receiving_code} created successfully."}
+                else:
+                    error_message = parsed.get("Error", {}).get("errMessage")
+                    return {"status": "error", "message": f"Error creating receiving order: {error_message}"}
+            else:
+                print("Response content not found.")
+                return {"status": "error", "message": "Response content not found."}
+        else:
+            print("Service response not found.")
+            return {"status": "error", "message": "Service response not found."}
+

@@ -8,11 +8,16 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 import json
+import numpy as np
+import openpyxl
+
 
 # Create your views here.
 from Django_apps.HomeApp.functions.session_function import check_login_status, get_session_user, get_client_ip, \
     get_session_user_location
 from Django_apps.OMSOrderApp.api_handler.fedex_api import *
+from Django_apps.OMSOrderApp.api_handler.oms_api import createProduct, createReceivingOrder
+from Django_apps.OMSOrderApp.customer_handler.email_function import send_fedex_email_function
 from Django_apps.OMSOrderApp.export_function.download_attachment import get_picking_list_no_db
 from Django_apps.OMSOrderApp.export_function.ils_order_import import ils_order_process_function
 
@@ -357,6 +362,9 @@ def fedex_tracking_status_checking(request):
         "page_head": "FedEX Tracking Status",
     }
 
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+
     if request.method == "POST" and 'import_button' in request.POST:
         print("import_button clicked")
         start_time = time.time()
@@ -384,8 +392,44 @@ def fedex_tracking_status_checking(request):
                     fedex_token_response = fedex_api.get_access_token()
                     if fedex_token_response["success"]:
                         api_token = fedex_token_response["msg"]
+
                         print("# 6. Iterate over the DataFrame and print the tracking numbers")
                         df['tracking_status'] = df['跟踪号'].apply(lambda x: fedex_api.get_fedex_status(api_token, x))
+                        # After getting tracking status
+                        df['status'] = df['tracking_status'].apply(lambda x: x['status'] if isinstance(x, dict) else x)
+                        df['service'] = df['tracking_status'].apply(
+                            lambda x: x.get('service', '') if isinstance(x, dict) else '')
+                        df['ship_date'] = df['tracking_status'].apply(
+                            lambda x: x['dates'].get('ship_date') if isinstance(x, dict) else None)
+                        df['pickup_date'] = df['tracking_status'].apply(
+                            lambda x: x['dates'].get('pickup_date') if isinstance(x, dict) else None)
+                        df['actual_delivery'] = df['tracking_status'].apply(
+                            lambda x: x['dates'].get('actual_delivery') if isinstance(x, dict) else None)
+                        df['estimated_delivery'] = df['tracking_status'].apply(
+                            lambda x: x['dates'].get('estimated_delivery') if isinstance(x, dict) else None)
+
+                        # # For the events timeline, you might want to join them with newlines
+                        # df['transit_timeline'] = df['tracking_status'].apply(
+                        #     lambda x: "\n".join([f"{e['date']} - {e['description']} ({e['location']})"
+                        #                          for e in x['dates'].get('all_events', [])])
+                        #     if isinstance(x, dict) else None
+                        # )
+
+                        current_dt = datetime.now()
+                        df['estimated_delivery_date'] = df['estimated_delivery'].apply(
+                            lambda x: x[:10] if pd.notna(x) else None
+                        )
+                        df['estimated_delivery_dt'] = pd.to_datetime(df['estimated_delivery_date'], errors='coerce')
+
+                        df['late_alert'] = (
+                                df['estimated_delivery_dt'].notna() &  # Only check rows with valid dates
+                                (df['status'] != 'Delivered') &  # Skip delivered packages
+                                (df['status'] != 'No tracking information') &  # Skip invalid tracking
+                                (current_dt > (df['estimated_delivery_dt'] + timedelta(days=3)))  # 3-day check
+                        )
+
+                        df = df.drop(columns=['tracking_valid', 'tracking_status', 'estimated_delivery_dt'], errors='ignore')
+
                         print("# 7. download the new excel file.")
                         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
                         response['Content-Disposition'] = f"attachment; filename=tracking_status_result.xlsx"
@@ -406,6 +450,9 @@ def fedex_tracking_status_checking(request):
 
 def ecang_order_dashboard_page(request):
     print("ecang_order_dashboard_page")
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+
     content = {
         "title": "Order Dashboard",
         "page_head": "Order Dashboard",
@@ -486,3 +533,103 @@ def ecang_order_dashboard_page(request):
             "current_datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
     return render(request, PAGE_PATH + "ecang_order_dashboard_page.html", content)
+
+
+def oms_receiving_order_and_product(request):
+    print("create_oms_receiving_order_and_product")
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+    content = {
+        "title": "CFSFPL1 Receiving Order and Product",
+        "page_head": "CFSFPL1 Receiving Order and Product",
+    }
+
+    if request.method == "POST":
+        # Handle the Download Template button
+        if "download_button" in request.POST:
+            # Create Excel template
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Template"
+            ws.append(["PONumber", "ContainerNo", "Item", "BarCode"])  # Add your required columns here
+
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = "attachment; filename=template.xlsx"
+            wb.save(response)
+            return response
+        elif "import_button" in request.POST and "import_file_path" in request.FILES:
+            # Process uploaded file
+            uploaded_file = request.FILES["import_file_path"]
+            # Read the file into a dataframe
+            try:
+                df = pd.read_excel(uploaded_file)
+                # if df is not empty, then call createProduct(df)
+                if not df.empty:
+                    fptest_api_key = {
+                        "appToken": "f88b7a4b18ebe887ee7b3f5af1e1b8d5",
+                        "appKey": "39c64b08d11e7f2dcabdead6aa461a2f",
+                    }
+                    CFSFPL1_API_KEY = {
+                        "appToken": "a1de6047ef2f8cd059299db0890fb26b",
+                        "appKey": "05575f447d19c8f547c9413a186f6973",
+                    }
+                    result = createProduct(df, fptest_api_key)
+                    if result['status'] == "success":
+                        # Call createReceivingOrder(df)
+                        rv_order_result = createReceivingOrder(df, fptest_api_key)
+                        if rv_order_result['status'] == "success":
+                            messages.success(request, rv_order_result['message'])
+                        else:
+                            messages.warning(request, rv_order_result['message'])
+                    else:
+                        messages.warning(request, result['message'])
+            except Exception as e:
+                messages.warning(request, f"Error: {e}")
+
+    return render(request, PAGE_PATH + "oms_receiving_order_and_product.html", content)
+
+
+def send_fedex_close_trailer_email(request):
+    print("send_fedex_close_trailer_email")
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+    content = {
+        "title": "Fedex Close Trailer Email",
+        "page_head": "Fedex Close Trailer Email",
+    }
+    if request.method == "POST":
+        # Handle the Download Template button
+        if "download_button" in request.POST:
+            # Create Excel template
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Template"
+            ws.append(["PickupTime", "TrailerNumber", "DockNumber", "HandlingType",
+                       "PercentFull", "Notes"])  # Add your required columns here
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = "attachment; filename=template.xlsx"
+            wb.save(response)
+            return response
+        elif "import_button" in request.POST and "import_file_path" in request.FILES:
+            # Process uploaded file
+            uploaded_file = request.FILES["import_file_path"]
+            # Read the file into a dataframe
+            try:
+                df = pd.read_excel(uploaded_file)
+                if not df.empty:
+                    result = send_fedex_email_function(df)
+                    if result['status']:
+                        messages.success(request, result['message'])
+                    else:
+                        messages.warning(request, result['message'])
+                else:
+                    messages.warning(request, "The uploaded file is empty.")
+            except Exception as e:
+                messages.warning(request, f"Error: {e}")
+
+    return render(request, PAGE_PATH + "send_fedex_close_trailer_email.html", content)
+

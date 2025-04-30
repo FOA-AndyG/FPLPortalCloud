@@ -54,4 +54,8 @@ urlpatterns = [
     # # picking pages
     # path('picking_page/', views.picking_page, name='picking_page'),
 
+    path('oms_receiving_order_and_product/', views.oms_receiving_order_and_product, name='oms_receiving_order_and_product'),
+    path('send_fedex_close_trailer_email/', views.send_fedex_close_trailer_email,
+         name='send_fedex_close_trailer_email'),
+
 ]
