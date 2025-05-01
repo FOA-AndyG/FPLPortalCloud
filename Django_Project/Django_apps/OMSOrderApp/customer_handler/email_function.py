@@ -67,14 +67,32 @@ def send_fedex_email_function(df):
         current_date = datetime.now().strftime("%Y-%m-%d")
         email_subject = f"FPL Pickup Request – Trailer Ready - {current_date}"
         email_from = 'williamw@fplsolution.com'
-        # recipient_email = ["andyg@furnitureproslogistics.com"]
 
-        recipient_email = ["industry-trailer-request@corp.ds.fedex.com", "LH.IDSY@corp.ds.fedex.com"]
-        cc_email = ["vincentd@furnitureproslogistics.com", "victorh@furnitureproslogistics.com",
-                    "abnerg@furnitureproslogistics.com", "andyg@furnitureproslogistics.com"]
+        # recipient_email = ["andyg@furnitureproslogistics.com"]
+        # cc_email = ["andyg@furnitureproslogistics.com"]
+
+        recipient_email = [
+            "industry-trailer-request@corp.ds.fedex.com",
+            "LH.IDSY@corp.ds.fedex.com",
+            "danny.orozco@fedex.com",
+            "maria.solorzano@fedex.com",
+            "esquivelmarco78@gmail.com",
+            "mmikeg186@gmail.com",
+            "davidvgvgonzalez777@gmail.com",
+            "pocket30kk@gmail.com",
+        ]
+        cc_email = [
+            "vincentd@furnitureproslogistics.com",
+            "victorh@furnitureproslogistics.com",
+            "abnerg@furnitureproslogistics.com",
+            "andyg@furnitureproslogistics.com"
+        ]
 
         email_template = 'OMSOrderApp/parts/fedex_email_template.html'
-        context = {"data": df.to_dict(orient="records")}
+        context = {
+            "data": df.to_dict(orient="records"),
+            "current_date": current_date,
+        }
         msg_html = render_to_string(email_template, context)
 
         msg_customer = EmailMessage(

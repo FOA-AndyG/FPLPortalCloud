@@ -575,10 +575,10 @@ def oms_receiving_order_and_product(request):
                         "appToken": "a1de6047ef2f8cd059299db0890fb26b",
                         "appKey": "05575f447d19c8f547c9413a186f6973",
                     }
-                    result = createProduct(df, fptest_api_key)
+                    result = createProduct(df, CFSFPL1_API_KEY)
                     if result['status'] == "success":
                         # Call createReceivingOrder(df)
-                        rv_order_result = createReceivingOrder(df, fptest_api_key)
+                        rv_order_result = createReceivingOrder(df, CFSFPL1_API_KEY)
                         if rv_order_result['status'] == "success":
                             messages.success(request, rv_order_result['message'])
                         else:
@@ -606,8 +606,8 @@ def send_fedex_close_trailer_email(request):
             wb = openpyxl.Workbook()
             ws = wb.active
             ws.title = "Template"
-            ws.append(["PickupTime", "TrailerNumber", "DockNumber", "HandlingType",
-                       "PercentFull", "Notes"])  # Add your required columns here
+            ws.append(["Pickup Time", "Trailer Number", "Dock Number", "Actual Pull Time", "Handling Type",
+                       "Percent Full", "Notes"])  # Add your required columns here
             response = HttpResponse(
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )

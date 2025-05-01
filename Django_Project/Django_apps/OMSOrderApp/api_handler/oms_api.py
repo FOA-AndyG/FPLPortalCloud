@@ -430,7 +430,7 @@ def createReceivingOrder(df, customer_api_key):
     eta_date = eta_time.strftime("%Y-%m-%d")
     paramsJson = {
         "reference_no": df.iloc[0]["ContainerNo"],  # Use the first row's ContainerNo as reference_no
-        "warehouse_code": "FPWH1",                 # Replace with appropriate warehouse code
+        "warehouse_code": "FURNITUREPROWH",                 # Replace with appropriate warehouse code
         "tracking_number": df.iloc[0]["ContainerNo"],  # Use the first row's ContainerNo as tracking_number
         "eta_date": eta_date,  # Replace with appropriate ETA date
         "container_type": "40HQ",
