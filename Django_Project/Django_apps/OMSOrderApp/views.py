@@ -17,7 +17,6 @@ from Django_apps.HomeApp.functions.session_function import check_login_status, g
     get_session_user_location
 from Django_apps.OMSOrderApp.api_handler.fedex_api import *
 from Django_apps.OMSOrderApp.api_handler.oms_api import createProduct, createReceivingOrder
-from Django_apps.OMSOrderApp.customer_handler.email_function import send_fedex_email_function
 from Django_apps.OMSOrderApp.export_function.download_attachment import get_picking_list_no_db
 from Django_apps.OMSOrderApp.export_function.ils_order_import import ils_order_process_function
 
@@ -89,11 +88,11 @@ def web_scan_page(request):
     # open a trailer
     if request.method == "POST" and 'trailer_confirm_btn' in request.POST:
         trailer_number = request.POST.get("trailer_number")
-        create_date = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+        create_date = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
         try:
-            create_trailer(trailer_number, username, create_date, location)
-            return redirect('OMSOrderApp:web_scan_detail_page', trailer_number=trailer_number)
+            trailer_id = create_trailer(trailer_number, username, create_date, location)
+            return redirect('OMSOrderApp:web_scan_detail_page', trailer_id=trailer_id)
         except Exception as e:
             messages.warning(request, str(e))
     today_date = datetime.strftime(datetime.now(), '%Y-%m-%d')
@@ -112,24 +111,42 @@ def web_scan_page(request):
     return render(request, PAGE_PATH + "web_scan_page.html", content)
 
 
-def web_scan_detail_page(request, trailer_number):
+def web_scan_detail_page(request, trailer_id):
     print("web_scan_detail_page")
     if not check_login_status(request):
         return redirect("HomeApp:login")
+    username = get_session_user_username(request)
+    user_location = get_session_user_location(request)
+
+    handling_types = {
+        "0": "Industry Facility to 3-5 Lane",
+        "1": "Diamond Bar Facility to Local",
+        "2": "Tracy to NorCal",
+    }
 
     if request.method == "POST" and 'close_btn' in request.POST:
         print("close_btn")
-        close_trailer(trailer_number)
+        dock_number = request.POST.get("dock_number")
+        handling_type = request.POST.get("handling_type")
+        percent_full = request.POST.get("percent_full")
+        result = close_trailer(trailer_id, dock_number, handling_type, percent_full)
+        if result["status"]:
+            messages.success(request, f"Success: {result['message']}")
+        else:
+            messages.warning(request, f"Warning: {result['message']}")
+
         return redirect("OMSOrderApp:web_scan_page")
 
     # check if the trailer open;
-    trailer_obj_list = get_trailer_data(trailer_number=trailer_number, status=0)
-    if trailer_obj_list.first():
+    trailer_obj = WebScan.objects.get(id=trailer_id, status=0)
+    if trailer_obj:
         content = {
-            "title": trailer_number,
-            "trailer_number": trailer_number,
-            "total_box": trailer_obj_list.first().total_box,
-            "username": get_session_user_username(request)
+            "title": trailer_obj.trailer_number,
+            "trailer_number": trailer_obj.trailer_number,
+            "total_box": trailer_obj.total_box,
+            "username": username,
+            "user_location": user_location,
+            "handling_types": handling_types
         }
         return render(request, PAGE_PATH + "web_scan_detail_page.html", content)
     else:
@@ -591,45 +608,4 @@ def oms_receiving_order_and_product(request):
     return render(request, PAGE_PATH + "oms_receiving_order_and_product.html", content)
 
 
-def send_fedex_close_trailer_email(request):
-    print("send_fedex_close_trailer_email")
-    if not check_login_status(request):
-        return redirect("HomeApp:login")
-    content = {
-        "title": "Fedex Close Trailer Email",
-        "page_head": "Fedex Close Trailer Email",
-    }
-    if request.method == "POST":
-        # Handle the Download Template button
-        if "download_button" in request.POST:
-            # Create Excel template
-            wb = openpyxl.Workbook()
-            ws = wb.active
-            ws.title = "Template"
-            ws.append(["Pickup Time", "Trailer Number", "Dock Number", "Actual Pull Time", "Handling Type",
-                       "Percent Full", "Notes"])  # Add your required columns here
-            response = HttpResponse(
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-            response["Content-Disposition"] = "attachment; filename=template.xlsx"
-            wb.save(response)
-            return response
-        elif "import_button" in request.POST and "import_file_path" in request.FILES:
-            # Process uploaded file
-            uploaded_file = request.FILES["import_file_path"]
-            # Read the file into a dataframe
-            try:
-                df = pd.read_excel(uploaded_file)
-                if not df.empty:
-                    result = send_fedex_email_function(df)
-                    if result['status']:
-                        messages.success(request, result['message'])
-                    else:
-                        messages.warning(request, result['message'])
-                else:
-                    messages.warning(request, "The uploaded file is empty.")
-            except Exception as e:
-                messages.warning(request, f"Error: {e}")
-
-    return render(request, PAGE_PATH + "send_fedex_close_trailer_email.html", content)
 

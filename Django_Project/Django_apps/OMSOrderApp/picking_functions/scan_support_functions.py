@@ -16,21 +16,40 @@ from Django_apps.OMSOrderApp.reports.scan_function import return_match_tracking_
 
 def create_trailer(trailer_number, username, create_date, location):
     obj = WebScan(trailer_number=trailer_number, username=username, create_date=create_date,
-                  total_box=0, status=0, location=location)
+                  total_box=0, status=0, location=location, send_email=0)
     obj.save()
+    return obj.id
 
 
-def close_trailer(trailer_number):
-    obj = WebScan.objects.get(trailer_number=trailer_number, status=0)
-    obj.close_date = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
-    obj.status = 1
+def close_trailer(trailer_id, dock_number, handling_type, percent_full):
+    try:
+        obj = WebScan.objects.get(id=trailer_id, status=0)
+        obj.close_date = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+        obj.status = 1
 
-    detail_total_count = WebScanDetail.objects.filter(trailer_number=trailer_number, check_system=0).count()
+        detail_total_count = WebScanDetail.objects.filter(trailer_number=obj.trailer_number, check_system=0).count()
+        obj.total_box = detail_total_count
+        # WebScanDetail.objects.filter(trailer_number=trailer_number, check_system=0).update(check_system=1)
 
-    obj.total_box = detail_total_count
-    obj.save()
-
-    WebScanDetail.objects.filter(trailer_number=trailer_number, check_system=0).update(check_system=1)
+        if "FEDEX" in obj.trailer_number and obj.location == 'FPL':
+            print("Start to send email to FedEx...")
+            handling_types = {
+                "0": "Industry Facility to 3-5 Lane",
+                "1": "Diamond Bar Facility to Local",
+                "2": "Tracy to NorCal",
+            }
+            zone = handling_types.get(handling_type, "Unknown")
+            obj.dock_number = dock_number
+            obj.percent_full = percent_full
+            obj.zone = zone
+            obj.save()
+            return {"status": True, "message": f"Trailer {obj.trailer_number} closed successfully."}
+        else:
+            obj.save()
+            return {"status": True, "message": f"Trailer {obj.trailer_number} closed successfully."}
+    except Exception as e:
+        print(f"Error closing trailer: {e}")
+        return {"status": False, "message": f"Error closing trailer: {e}"}
 
 
 def get_trailer_data(**kwargs):

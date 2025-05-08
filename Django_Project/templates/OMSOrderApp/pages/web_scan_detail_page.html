@@ -22,7 +22,7 @@
 {% endfor %}
 {% endif %}
 <div class="row">
-    <div class="col-sm-2">
+    <div class="col-sm-3">
         <h6>Trailer#:</h6>
         <input class="form-control" type="text" readonly id="trailer_number" value="{{trailer_number}}"
                style="font-size:22px; color:black;">
@@ -96,8 +96,45 @@
 </div>
 
 <hr>
+
+{% if user_location == "FPL" and "fedex" in trailer_number|lower %}
 <form method="post">
-    {% csrf_token %}
+{% csrf_token %}
+    <div class="row">
+        <div class="col-md-10">
+            <div class="form-group row">
+                <div class="col-sm-1">
+                    <input class="form-control" id="dock_number" name="dock_number" type="text" placeholder="Dock#" required>
+                </div>
+                <div class="col-sm-2">
+                    <select class="form-control" id="handling_type" name="handling_type" required>
+                        <option disabled selected value="">Select Handling Type</option>
+                        {% for key, value in handling_types.items %}
+                        <option value={{key}}>{{value}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-sm-1">
+                    <input class="form-control" id="percent_full" name="percent_full" max="100" min="0"
+                            type="number" placeholder="Percent Full" required>
+                </div>
+                <div class="col-sm-2">
+                    <input class="form-control btn btn-info" type="submit" name="close_btn"
+                           value="Close Trailer">
+                </div>
+
+                <div class="col-sm-2">
+                    <input class="form-control btn btn-warning" type="button" name="back_to_scan_btn"
+                           value="Back to">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% else %}
+<form method="post">
+{% csrf_token %}
     <div class="row">
         <div class="col-md-10">
             <div class="form-group row">
@@ -105,11 +142,15 @@
                     <input class="form-control btn btn-info" type="submit" name="close_btn"
                            value="Close Trailer">
                 </div>
+                <div class="col-sm-2">
+                    <input class="form-control btn btn-warning" type="button" name="back_to_scan_btn"
+                           value="Back to">
+                </div>
             </div>
         </div>
     </div>
 </form>
-
+{% endif %}
 
 {% endblock content %}
 
@@ -196,6 +237,10 @@ $(document).ready(function () {
         messageInputDom.value = '';
         messageInputDom.focus();
     };
+
+    document.querySelector('input[name="back_to_scan_btn"]').addEventListener("click", function () {
+        window.location.href = "/OMSOrderApp/web_scan_page/";
+    });
 
 });
 

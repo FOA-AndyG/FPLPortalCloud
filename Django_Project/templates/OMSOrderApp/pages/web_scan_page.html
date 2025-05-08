@@ -111,7 +111,7 @@
             {% for r in open_trailers %}
             <tr class="text-danger">
                 <td>
-                    <a class="btn btn-success" href="{% url 'OMSOrderApp:web_scan_detail_page' r.trailer_number %}">
+                    <a class="btn btn-success" href="{% url 'OMSOrderApp:web_scan_detail_page' r.id %}">
                         Enter
                     </a>
                 </td>

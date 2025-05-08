@@ -194,6 +194,10 @@ class WebScan(models.Model):
     total_box = models.IntegerField(blank=True, null=True)
     status = models.IntegerField(blank=True, null=True)
     location = models.CharField(max_length=45, blank=True, null=True)
+    send_email = models.IntegerField(blank=True, null=True)
+    zone = models.CharField(max_length=45, blank=True, null=True)
+    dock_number = models.IntegerField(blank=True, null=True)
+    percent_full = models.IntegerField(blank=True, null=True)
     objects = models.Manager()
 
     class Meta:

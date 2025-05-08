@@ -34,7 +34,7 @@ urlpatterns = [
     # scan program
     path('ecang_order_dashboard_page/', views.ecang_order_dashboard_page, name='ecang_order_dashboard_page'),
     path('web_scan_page/', views.web_scan_page, name='web_scan_page'),
-    path('web_scan_detail_page/<str:trailer_number>', views.web_scan_detail_page, name='web_scan_detail_page'),
+    path('web_scan_detail_page/<str:trailer_id>', views.web_scan_detail_page, name='web_scan_detail_page'),
     path('web_scan_function/', views.web_scan_function, name='web_scan_function'),
     path('web_scan_wrong_tracking_page/', views.web_scan_wrong_tracking_page, name='web_scan_wrong_tracking_page'),
     path('web_scan_report/', views.web_scan_report, name='web_scan_report'),
@@ -55,7 +55,5 @@ urlpatterns = [
     # path('picking_page/', views.picking_page, name='picking_page'),
 
     path('oms_receiving_order_and_product/', views.oms_receiving_order_and_product, name='oms_receiving_order_and_product'),
-    path('send_fedex_close_trailer_email/', views.send_fedex_close_trailer_email,
-         name='send_fedex_close_trailer_email'),
 
 ]
