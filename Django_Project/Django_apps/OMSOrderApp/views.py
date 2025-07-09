@@ -19,6 +19,7 @@ from Django_apps.OMSOrderApp.api_handler.fedex_api import *
 from Django_apps.OMSOrderApp.api_handler.oms_api import createProduct, createReceivingOrder
 from Django_apps.OMSOrderApp.export_function.download_attachment import get_picking_list_no_db
 from Django_apps.OMSOrderApp.export_function.ils_order_import import ils_order_process_function
+from Django_apps.OMSOrderApp.order_page_function.process_import import process_check_fedex_order_zone
 
 from Django_apps.OMSOrderApp.picking_functions.scan_support_functions import *
 from Django_apps.OMSOrderApp.reports.direct_sale_pricing_functions import *
@@ -608,4 +609,41 @@ def oms_receiving_order_and_product(request):
     return render(request, PAGE_PATH + "oms_receiving_order_and_product.html", content)
 
 
+def check_fedex_order_zone(request):
+    print("create_oms_receiving_order_and_product")
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
 
+    content = {
+        "title": "Check Fedex Order Zone",
+        "page_head": "Check Fedex Order Zone",
+    }
+
+    if request.method == "POST":
+        if 'import_button' in request.POST and "import_file_path" in request.FILES:
+            print("import_button")
+            result = process_check_fedex_order_zone(request)
+            if result['status']:
+                return result['response']
+            else:
+                messages.warning(request, result['msg'])
+
+    return render(request, PAGE_PATH + "check_fedex_order_zone.html", content)
+
+
+# TODO: check_wms_hot_items
+def check_wms_hot_items(request):
+    print("check_wms_hot_items")
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+
+    content = {
+        "title": "Check WMS Hot Items",
+        "page_head": "Check WMS Hot Items",
+    }
+
+    if request.method == "POST":
+        if 'check_button' in request.POST:
+            print("check_button")
+
+    return render(request, PAGE_PATH + "check_wms_hot_items.html", content)

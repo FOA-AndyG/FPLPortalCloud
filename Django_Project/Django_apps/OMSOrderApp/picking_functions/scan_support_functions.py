@@ -250,3 +250,59 @@ def compare_web_scan_tracking_with_eccang_pending_orders(request, warehouse_code
         }
     return content
 
+
+def check_wms_sku():
+    try:
+        with ECANGMySQLConnection() as db:
+            sql = """
+            SELECT o.order_code
+            , o.order_status
+            , p.product_barcode
+            , o.parcel_quantity
+            , s.tracking_number
+            , oa.multiple_tracking_number
+            , p.picking_code
+            from orders o
+            LEFT JOIN picking_detail AS p ON o.order_id = p.order_id
+            LEFT JOIN ship_order s ON o.order_id=s.order_id
+            LEFT JOIN order_additional AS oa ON o.order_id = oa.order_id
+            WHERE o.warehouse_id in (7,8)
+            AND o.order_status IN (5,6,7)
+            """
+            df = db.read_sql_to_dataframe(sql)
+            df['tracking_number'] = df['tracking_number'].astype(str)
+            df["tracking_number"] = df["tracking_number"].str.replace(' ', '')
+            # print(df.head(5))
+    except Exception as e:
+        print(e)
+        df = pd.DataFrame()
+    return df
+
+
+# get sellable, reserved, onway product dimension from wms.product_inventory
+def get_wms_product_dimension():
+    try:
+        with ECANGMySQLConnection() as db:
+            sql = """
+            SELECT 
+                inv.customer_code, 
+                inv.product_id, 
+                inv.product_barcode AS SKU, 
+                inv.pi_sellable, 
+                inv.pi_reserved, 
+                inv.pi_onway,
+                COALESCE(p.product_length, pa.product_length) AS length,
+                COALESCE(p.product_width, pa.product_width) AS width,
+                COALESCE(p.product_height, pa.product_height) AS height
+            FROM wms.product_inventory as inv 
+            LEFT JOIN wms.product_warehouse_attribute AS p ON inv.product_id = p.product_id
+            LEFT JOIN wms.product AS pa ON inv.product_id = pa.product_id
+            WHERE inv.warehouse_id = 7
+            AND (inv.pi_sellable > 0 OR inv.pi_onway > 0 OR inv.pi_reserved > 0)
+            """
+            df = db.read_sql_to_dataframe(sql)
+    except Exception as e:
+        print(e)
+        df = pd.DataFrame()
+
+    return df

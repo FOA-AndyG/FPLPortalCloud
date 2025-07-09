@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime
+from io import BytesIO
 
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
@@ -9,7 +10,6 @@ from django.http import HttpResponse
 from Django_Project.settings import EXCEL_FILE_PATH
 from Django_apps.HomeApp.functions.session_function import get_session_user_username
 from Django_apps.OMSOrderApp.api_handler.oms_api import *
-from Django_apps.OMSOrderApp.export_function.download_attachment import foa_generate_label
 from Django_apps.OMSOrderApp.models import *
 
 
@@ -24,6 +24,9 @@ from Django_apps.OMSOrderApp.models import *
 
 
 # main process function
+from Django_apps.OMSOrderApp.picking_functions.scan_support_functions import get_wms_product_dimension
+
+
 def process_import(request):
     import time
     start_time = time.time()
@@ -474,4 +477,103 @@ def generate_ecang_empty_order_template():
     product_df["数量/Quantity"] = product_df["数量/Quantity"].astype(int)
 
     return {"order_df": order_df, "product_df": product_df}
+
+
+def process_check_fedex_order_zone(request):
+    try:
+        uploaded_file = request.FILES["import_file_path"]
+
+        if not uploaded_file.name.endswith(('.xlsx', '.xls')):
+            return {"status": False, "msg": "Error: please upload a valid Excel file. "}
+
+        df_orders = pd.read_excel(uploaded_file)
+
+        # Filter FedEx orders
+        df_orders = df_orders[
+            df_orders["Delivery Method"].str.contains("fedex", case=False, na=False) &
+            df_orders["Tracking No."].astype(str).str.match(r"^\d{12}$")
+            ]
+
+        # Fetch zone mapping from the database using Django ORM
+        zones_dict = dict(FedexDirectZone.objects.values_list("zipcode", "zone"))
+
+        # substitute missing zones with a default value and only use the first 5 characters of the postcode
+        df_orders["Postcode"] = df_orders["Recipient Postal Code"].astype(str).str.slice(0, 5)
+
+        # Assign zones based on zipcode
+        df_orders["zone"] = df_orders["Postcode"].map(zones_dict)
+
+        # Apply specific facility mappings
+        df_orders["zone"] = df_orders["zone"].fillna("Diamond Bar Facility to Local")  # Default for missing zip codes
+
+        # selected_columns = ['Order Code', 'Tracking Number', 'Sm Code', 'Postcode', 'zone']
+        # print("df_orders", df_orders[selected_columns])
+
+        # Split data by zones into separate DataFrames
+        df_industry = df_orders[df_orders["zone"].str.startswith("Industry Facility")]
+        df_norcal = df_orders[df_orders["zone"].str.startswith("Tracy")]
+        df_local = df_orders[df_orders["zone"].str.startswith("Diamond Bar")]
+        df_phoenix = df_orders[df_orders["zone"].str.startswith("Phoenix")]
+
+        # At FedEx Ground sort locations (hubs and automated stations):
+        # The following items areconsidered non-conveyables:
+        # Any package greater than 60 lbs. = 27 kg
+        # Any package over 48 inches in length, 27 inches in width, or 27 inches in height
+        # = 121 cm in length, 68 cm in width, or 68 cm in height
+        # before saving to Excel, need to check product weight and dimensions for non-conveyables at Industry Facility zone
+        # 提取SKU中*之前的部分
+        df_industry['SKU'] = df_industry['SKU'].astype(str).str.split('*').str[0]
+        # Get product dimension data
+        df_product_dim = get_wms_product_dimension()
+        if df_product_dim.empty:
+            return {"status": False, "msg": "Error: Product dimension data is empty."}
+
+        # 将产品尺寸数据与订单数据合并（基于SKU）
+        df_industry_merge = pd.merge(df_industry, df_product_dim, on='SKU', how='left')
+
+        # 定义非可运输条件 - 为了保证产品一定能上传送带，将重量和尺寸都减少一定范围
+        # 比如原始重量大于27kg的产品，减少到25kg以下，尺寸大于121cm的产品，减少到118cm以下，长度大于68cm的产品，减少到65cm以下，高度和宽度同理
+        non_conveyable_conditions = (
+                (df_industry_merge['Net Weight of Product'] > 25) |
+                (df_industry_merge['length'] > 118) |
+                (df_industry_merge['width'] > 65) |
+                (df_industry_merge['height'] > 65)
+        )
+        # 标记非可运输物品
+        df_industry_merge['Non-Conveyable'] = non_conveyable_conditions
+
+        # Convert to Excel with multiple sheets
+        output = BytesIO()
+        writer = pd.ExcelWriter(output, engine="xlsxwriter")
+
+        # calculate the total volume for each sheet
+        sum_non_conveyable = df_industry_merge.loc[df_industry_merge['Non-Conveyable'] == True, 'Volume'].sum()
+        sum_conveyable = df_industry_merge.loc[df_industry_merge['Non-Conveyable'] == False, 'Volume'].sum()
+        volume_data = [
+            ['Industry Facility - Non-Conveyable', sum_non_conveyable / 1000000],
+            ['Industry Facility - Conveyable', sum_conveyable / 1000000],
+            ['NorCal', df_norcal['Volume'].sum() / 1000000],
+            ['Diamond Bar Facility', df_local['Volume'].sum() / 1000000],
+            ['Phoenix', df_phoenix['Volume'].sum() / 1000000],
+        ]
+        df_volume = pd.DataFrame(volume_data, columns=['Zone', 'Volume(m³)'])
+        df_volume['Expect Container qty of 53ft'] = (df_volume['Volume(m³)'] / 102.2).round(2)
+        df_volume.to_excel(writer, index=False, sheet_name="Volume Summary")
+
+        df_industry_merge.to_excel(writer, index=False, sheet_name="Industry Facility")
+        df_norcal.to_excel(writer, index=False, sheet_name="NorCal")
+        df_local.to_excel(writer, index=False, sheet_name="Diamond Bar Facility to Local")
+        df_phoenix.to_excel(writer, index=False, sheet_name="Phoenix")
+
+        writer.close()
+        output.seek(0)
+
+        response = HttpResponse(output.read(),
+                                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = "attachment; filename=processed_orders.xlsx"
+
+        return {"status": True, "response": response, "msg": "Success!"}
+    except Exception as e:
+        print("Error processing FedEx order zone:", str(e))
+        return {"status": False, "msg": str(e)}
 

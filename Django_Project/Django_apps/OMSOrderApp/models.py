@@ -237,3 +237,13 @@ class WebScanDetailError(models.Model):
     class Meta:
         managed = False
         db_table = 'web_scan_detail_error'
+
+
+class FedexDirectZone(models.Model):
+    zipcode = models.CharField(max_length=45, blank=True, null=True)
+    zone = models.CharField(max_length=45, blank=True, null=True)
+    objects = models.Manager()
+
+    class Meta:
+        managed = False
+        db_table = 'fedex_direct_zone'
