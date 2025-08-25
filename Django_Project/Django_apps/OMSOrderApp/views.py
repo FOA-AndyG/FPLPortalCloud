@@ -468,8 +468,6 @@ def fedex_tracking_status_checking(request):
 
 def ecang_order_dashboard_page(request):
     print("ecang_order_dashboard_page")
-    if not check_login_status(request):
-        return redirect("HomeApp:login")
 
     content = {
         "title": "Order Dashboard",

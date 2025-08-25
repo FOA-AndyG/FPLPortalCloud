@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime
+from django.utils import timezone
 from io import BytesIO
 
 import pandas as pd
@@ -494,26 +495,33 @@ def process_check_fedex_order_zone(request):
             df_orders["Tracking No."].astype(str).str.match(r"^\d{12}$")
             ]
 
-        # Fetch zone mapping from the database using Django ORM
-        zones_dict = dict(FedexDirectZone.objects.values_list("zipcode", "zone"))
+        # Fetch route mapping from the database using Django ORM
+        zones_dict = dict(FedexRouteZipcode.objects.values_list("zipcode", "route"))
+        # print(zones_dict)
 
         # substitute missing zones with a default value and only use the first 5 characters of the postcode
-        df_orders["Postcode"] = df_orders["Recipient Postal Code"].astype(str).str.slice(0, 5)
+        df_orders["zipcode"] = df_orders["Recipient Postal Code"].astype(str).str.slice(0, 5)
 
         # Assign zones based on zipcode
-        df_orders["zone"] = df_orders["Postcode"].map(zones_dict)
+        df_orders["route"] = df_orders["zipcode"].map(zones_dict)
 
         # Apply specific facility mappings
-        df_orders["zone"] = df_orders["zone"].fillna("Diamond Bar Facility to Local")  # Default for missing zip codes
-
-        # selected_columns = ['Order Code', 'Tracking Number', 'Sm Code', 'Postcode', 'zone']
-        # print("df_orders", df_orders[selected_columns])
+        df_orders["route"] = df_orders["route"].fillna("Industry Facility to 3-5 Lane")  # Default for missing zip codes
 
         # Split data by zones into separate DataFrames
-        df_industry = df_orders[df_orders["zone"].str.startswith("Industry Facility")]
-        df_norcal = df_orders[df_orders["zone"].str.startswith("Tracy")]
-        df_local = df_orders[df_orders["zone"].str.startswith("Diamond Bar")]
-        df_phoenix = df_orders[df_orders["zone"].str.startswith("Phoenix")]
+        df_industry = df_orders[df_orders["route"].str.startswith("Industry Facility")]
+        df_norcal = df_orders[df_orders["route"].str.startswith("Tracy")]
+        # df_local = df_orders[df_orders["route"].str.startswith("Diamond Bar")]
+        df_phoenix = df_orders[df_orders["route"].str.startswith("PHOENIX")]
+
+        # # 判断是否为星期一 (0=Monday, 6=Sunday)
+        # today = timezone.now().date()
+        # is_monday = today.weekday() == 0
+        # if not is_monday:
+        #     # 使用concat合并DataFrame（保留原始索引）
+        #     df_industry = pd.concat([df_industry, df_phoenix])
+        #     # 清空Phoenix DataFrame（保持列结构）
+        #     df_phoenix = pd.DataFrame(columns=df_phoenix.columns)
 
         # At FedEx Ground sort locations (hubs and automated stations):
         # The following items areconsidered non-conveyables:
@@ -533,36 +541,39 @@ def process_check_fedex_order_zone(request):
 
         # 定义非可运输条件 - 为了保证产品一定能上传送带，将重量和尺寸都减少一定范围
         # 比如原始重量大于27kg的产品，减少到25kg以下，尺寸大于121cm的产品，减少到118cm以下，长度大于68cm的产品，减少到65cm以下，高度和宽度同理
-        non_conveyable_conditions = (
-                (df_industry_merge['Net Weight of Product'] > 25) |
-                (df_industry_merge['length'] > 118) |
-                (df_industry_merge['width'] > 65) |
-                (df_industry_merge['height'] > 65)
+        conveyable_conditions = (
+                (df_industry_merge['Net Weight of Product'] < 25) &
+                (df_industry_merge['length'] < 115) &
+                (df_industry_merge['width'] < 60) &
+                (df_industry_merge['height'] < 60)
         )
         # 标记非可运输物品
-        df_industry_merge['Non-Conveyable'] = non_conveyable_conditions
+        df_industry_merge['Conveyable'] = conveyable_conditions
+
+        df_industry_conveyable = df_industry_merge[df_industry_merge['Conveyable'] == True]
+        df_industry_non_conveyable = df_industry_merge[df_industry_merge['Conveyable'] == False]
 
         # Convert to Excel with multiple sheets
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine="xlsxwriter")
 
         # calculate the total volume for each sheet
-        sum_non_conveyable = df_industry_merge.loc[df_industry_merge['Non-Conveyable'] == True, 'Volume'].sum()
-        sum_conveyable = df_industry_merge.loc[df_industry_merge['Non-Conveyable'] == False, 'Volume'].sum()
+        sum_non_conveyable = df_industry_non_conveyable['Volume'].sum()
+        sum_conveyable = df_industry_conveyable['Volume'].sum()
         volume_data = [
             ['Industry Facility - Non-Conveyable', sum_non_conveyable / 1000000],
             ['Industry Facility - Conveyable', sum_conveyable / 1000000],
             ['NorCal', df_norcal['Volume'].sum() / 1000000],
-            ['Diamond Bar Facility', df_local['Volume'].sum() / 1000000],
             ['Phoenix', df_phoenix['Volume'].sum() / 1000000],
         ]
-        df_volume = pd.DataFrame(volume_data, columns=['Zone', 'Volume(m³)'])
+        df_volume = pd.DataFrame(volume_data, columns=['Route', 'Volume(m³)'])
         df_volume['Expect Container qty of 53ft'] = (df_volume['Volume(m³)'] / 102.2).round(2)
         df_volume.to_excel(writer, index=False, sheet_name="Volume Summary")
 
-        df_industry_merge.to_excel(writer, index=False, sheet_name="Industry Facility")
+        df_industry_conveyable.to_excel(writer, index=False, sheet_name="Industry-Conveyable")
+        df_industry_non_conveyable.to_excel(writer, index=False, sheet_name="Industry-NonConveyable")
         df_norcal.to_excel(writer, index=False, sheet_name="NorCal")
-        df_local.to_excel(writer, index=False, sheet_name="Diamond Bar Facility to Local")
+        # df_local.to_excel(writer, index=False, sheet_name="Diamond Bar Facility to Local")
         df_phoenix.to_excel(writer, index=False, sheet_name="Phoenix")
 
         writer.close()

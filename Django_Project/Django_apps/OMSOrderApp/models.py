@@ -247,3 +247,13 @@ class FedexDirectZone(models.Model):
     class Meta:
         managed = False
         db_table = 'fedex_direct_zone'
+
+
+class FedexRouteZipcode(models.Model):
+    zipcode = models.CharField(max_length=45, blank=True, null=True)
+    route = models.CharField(max_length=45, blank=True, null=True)
+    objects = models.Manager()
+
+    class Meta:
+        managed = False
+        db_table = 'fedex_route_zipcode'
