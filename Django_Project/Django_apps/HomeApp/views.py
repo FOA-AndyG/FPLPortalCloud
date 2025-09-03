@@ -14,20 +14,30 @@ def login(request):
     # clear session
     request.session.flush()
     print("login view")
-    content = {
-        "title": "FPLS Portal",
-        "footer": "© Furniture Pros Logistics Solution 2022"
-    }
+
     user_ip = get_client_ip(request)
     print("IP: ", user_ip)
 
     if request.method == "POST" and 'login_button' in request.POST:
         if user_authentication(request):
-            # return redirect("HomeApp:new_home_page")
-            return redirect("OMSOrderApp:web_scan_page")
+            # Check for the 'next' parameter in the submitted form data
+            next_url = request.POST.get('next')
+            if next_url:
+                # If there's a 'next' URL, redirect there
+                return redirect(next_url)
+            else:
+                # Otherwise, go to the default page
+                return redirect("OMSOrderApp:web_scan_page")
         else:
             return redirect("/login")
 
+    # For GET requests, get the 'next' parameter from the URL
+    next_url = request.GET.get('next', '')
+    content = {
+        "title": "FPLS Portal",
+        "footer": "© Furniture Pros Logistics Solution 2022",
+        "next": next_url
+    }
     return render(request, "home/pages/login.html", content)
 
 

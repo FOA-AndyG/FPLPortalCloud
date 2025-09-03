@@ -82,6 +82,11 @@
                         {{footer}}
                     </p>
                 </div>
+
+                <!-- ADD THIS HIDDEN INPUT -->
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
             </form>
         </div>
     </div>
