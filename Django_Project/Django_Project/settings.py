@@ -174,7 +174,7 @@ except ImportError:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# LOGIN_URL = 'HomeApp:login'
+LOGIN_URL = 'HomeApp:login'
 
 # Windows: static/OMSOrderApp to media
 EXCEL_FILE_PATH = "media/OMSOrderApp"
