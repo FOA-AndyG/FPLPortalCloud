@@ -1,0 +1,67 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} messages" role="alert">
+    <li>
+        {% if message.tags == "success" %}
+        <i class="fas fa-check"></i>
+        {% else %}
+        <i class="fas fa-times"></i>
+        {% endif %}
+        {{ message }}
+    </li>
+</div>
+{% endfor %}
+{% endif %}
+
+<hr>
+
+<!-- Content starts here -->
+<h2>Logs - {{ record.picking_no }}</h2>
+<p>BOL#: {{ record.bol_no }} | status: {{ record.status }} | bin: {{ record.location.location_code }}</p>
+<hr>
+
+{% if logs %}
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Time</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Notes</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.created_at|date:'m/d/Y H:i:s'}}</td>
+            <td>{{ log.operator }}</td>
+            <td>{{ log.get_action_display }}</td>
+            <td>{{ log.note }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>暂无日志记录。</p>
+{% endif %}
+
+<br>
+<a href="{% url 'TicketApp:storage_search' %}?bol_no={{ record.bol_no }}">Back to search page</a>
+
+
+<hr class="sidebar-divider">
+
+{% endblock content %}
+
+
+<!-- JavaScript -->
+{% block scripts %}
+
+
+{% endblock scripts %}
+

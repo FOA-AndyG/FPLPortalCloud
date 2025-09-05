@@ -59,22 +59,20 @@
         </div>
     </li>
 
-    {% if request.session.department == "IT" %}
     <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#order_app_menu"
             aria-expanded="true" aria-controls="order_app_menu">
             <i class="fas fa-fw fa-file-export"></i>
-            <span>Ticket</span>
+            <span>LTL Bin</span>
         </a>
         <div id="order_app_menu" class="collapse" aria-labelledby="headingUtilities"
             data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="/TicketApp/create_ticket">Create Ticket</a>
-                <a class="collapse-item" href="/TicketApp/ticket_dashboard">Ticket Dashboard</a>
+                <a class="collapse-item" href="/TicketApp/storage_create">storage_create</a>
+                <a class="collapse-item" href="/TicketApp/storage_search">storage_search</a>
             </div>
         </div>
     </li>
-    {% endif %}
     <!--  End  -->
 
     <!-- Divider -->

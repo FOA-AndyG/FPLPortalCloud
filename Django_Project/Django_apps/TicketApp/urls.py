@@ -8,10 +8,11 @@ app_name = 'TicketApp'
 
 urlpatterns = [
 
-    path('ticket_dashboard/', views.ticket_dashboard, name='ticket_dashboard'),
-    path('create_ticket/', views.create_ticket, name='create_ticket'),
+    path('landing_view/', views.landing_view, name='landing_view'),
 
-    path('ticket_list/', views.ticket_list, name='ticket_list'),
-    path('ticket/<int:pk>/', views.ticket_detail, name='ticket_detail'),
+    path("storage_create/", views.storage_create_view, name="storage_create"),
+    path("storage_search/", views.storage_search_view, name="storage_search"),
+    path("storage_confirm/<int:record_id>/", views.storage_confirm_view, name="storage_confirm"),
+    path("storage_logs/<int:record_id>/", views.storage_logs_view, name="storage_logs"),
 
 ]

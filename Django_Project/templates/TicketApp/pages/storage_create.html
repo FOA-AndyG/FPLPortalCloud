@@ -1,0 +1,143 @@
+{% extends 'new_home/include/_base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+<style>
+  .main-container {
+    max-width: 90%;
+    margin: 0 auto;
+    padding-top: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #333;
+  }
+
+  /* Shared style for all inputs for a consistent look */
+  .pda-input {
+    width: 100%;
+    font-size: 1.5rem;
+    padding: 15px;
+    text-align: center;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box; /* Important for padding and width */
+  }
+
+  /* Highlight the focused input */
+  .pda-input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  .btn-submit {
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 15px 20px;
+    border-radius: 8px;
+  }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="main-container">
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} messages" role="alert">
+        <li>
+          {% if message.tags == "success" %}
+            <i class="fas fa-check"></i>
+          {% else %}
+            <i class="fas fa-times"></i>
+          {% endif %}
+          {{ message }}
+        </li>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <h2 class="text-center mb-4">Stage New LTL Shipment</h2>
+
+  <form method="post" id="staging-form">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="picking_no" class="form-label">1. Scan Picking List #</label>
+      <input type="text" id="picking_no" name="picking_no" class="pda-input" required autofocus>
+    </div>
+
+    <div class="form-group">
+      <label for="bol_no" class="form-label">2. Scan BOL #</label>
+      <input type="text" id="bol_no" name="bol_no" class="pda-input" required>
+    </div>
+
+    <div class="form-group">
+      <label for="location_code" class="form-label">3. Scan Bin Location</label>
+      <input type="text" id="location_code" name="location_code" class="pda-input" required>
+    </div>
+
+    <div class="form-group">
+      <label for="pallet_qty" class="form-label">4. Enter Pallet Quantity</label>
+      <input type="number" id="pallet_qty" name="pallet_qty" class="pda-input" required>
+    </div>
+
+    <div class="form-group">
+      <label for="note" class="form-label">5. Notes (Optional)</label>
+      <textarea id="note" name="note" class="pda-input" style="font-size: 1.2rem;" rows="3"></textarea>
+    </div>
+
+    <button class="btn btn-success btn-submit" type="submit">Submit</button>
+  </form>
+
+</div>
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('staging-form');
+    const inputs = form.querySelectorAll('.pda-input');
+
+    inputs.forEach((input, index) => {
+        input.addEventListener('keypress', function (e) {
+            // Check if the Enter key was pressed
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Stop default behavior (like submitting the form)
+
+                const nextInput = inputs[index + 1];
+
+                if (nextInput) {
+                    // If there is a next input, focus on it
+                    nextInput.focus();
+                } else {
+                    // If this is the last input, submit the form
+                    form.submit();
+                }
+            }
+        });
+    });
+
+    // Auto-focus the first input on page load
+    const firstInput = document.getElementById('picking_no');
+    if(firstInput) {
+        firstInput.focus();
+
+        // On page show (e.g., from back button), clear and focus
+        window.addEventListener('pageshow', function () {
+            form.reset();
+            firstInput.focus();
+        });
+    }
+});
+</script>
+{% endblock scripts %}

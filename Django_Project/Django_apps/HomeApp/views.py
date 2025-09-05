@@ -1,5 +1,3 @@
-from urllib.parse import urlparse
-
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -21,13 +19,14 @@ def login(request):
     if request.method == "POST" and 'login_button' in request.POST:
         if user_authentication(request):
             # Check for the 'next' parameter in the submitted form data
-            next_url = request.POST.get('next')
-            if next_url:
-                # If there's a 'next' URL, redirect there
-                return redirect(next_url)
-            else:
-                # Otherwise, go to the default page
-                return redirect("OMSOrderApp:web_scan_page")
+            # next_url = request.POST.get('next')
+            # if next_url:
+            #     # If there's a 'next' URL, redirect there
+            #     print("Next URL:", next_url)
+            #     return redirect(next_url)
+            # else:
+            #     # Otherwise, go to the default page
+            return redirect("OMSOrderApp:web_scan_page")
         else:
             return redirect("/login")
 
