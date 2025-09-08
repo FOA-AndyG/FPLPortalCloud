@@ -119,11 +119,11 @@
 
   <!-- Unified Scan Search -->
   <h2 class="text-center">Scan BOL or Bin</h2>
-  <form method="get" id="scan-form">
+  <form method="get" id="scan_form">
     <input type="text" name="scan_code" class="scan-input"
            placeholder="BOL# or Bin# here..."
            autofocus>
-    <button type="submit" name="scan" class="btn btn-primary btn-scan">Search</button>
+    <button type="submit" name="scan" id="scan_button" class="btn btn-primary btn-scan">Search</button>
   </form>
 
   {% if results %}
@@ -137,9 +137,9 @@
           <div class="card-item"><strong>Pallet Qty:</strong> {{ record.pallet_qty }}</div>
           <div class="card-item">
               <strong>Status:</strong>
-              {% if record.status == "pending" %}
+              {% if record.status == "Pending" %}
                 <span class="status status-pending">Pending</span>
-              {% elif record.status == "shipped" %}
+              {% elif record.status == "Shipped" %}
                 <span class="status status-shipped">Shipped</span>
               {% else %}
                 <span class="status status-default">{{ record.status|capfirst }}</span>
@@ -167,29 +167,51 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const scanInput = document.querySelector('.scan-input');
-    const scanForm = document.getElementById('scan-form');
+    const scanForm = document.getElementById('scan_form');
+    const scanButton = document.getElementById('scan_button');
 
-    // Always focus the input field for quick scanning
-    scanInput.focus();
+    // Check if the required elements exist on the page
+    if (!scanInput || !scanForm) {
+        console.error('Error: Could not find the scan input or form element.');
+        return; // Stop the script if elements are missing
+    }
 
-    // Auto-submit when Enter is pressed (common for barcode scanners)
     scanInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault(); // Prevent default form submission
-        scanForm.submit();  // Submit the form
+      // This log will appear for ANY key press in the input field.
+      // Helps confirm the event listener is attached and working.
+      console.log('Keydown event detected. Key code:', e.keyCode);
+
+      // We only care about the 'Enter' key, which has a key code of 13.
+      if (e.keyCode === 13) {
+        console.log('Enter key (keyCode 13) detected. Preventing default and submitting.');
+
+        // This is the most critical line. It stops the browser's default
+        // behavior, which is to refresh the page.
+        e.preventDefault();
+
+        // As requested, programmatically click the search button instead of submitting the form.
+        scanButton.click();
       }
     });
 
-    // On mobile, sometimes the keyboard can hide the input. This helps.
-    scanInput.addEventListener('blur', function() {
-        setTimeout(() => scanInput.focus(), 10);
+
+    // --- Page Lifecycle Management ---
+    function focusAndSelectInput() {
+        if(scanInput) {
+            scanInput.focus();
+            // Using a short timeout for select() can help on some mobile browsers
+            setTimeout(() => scanInput.select(), 0);
+        }
+    }
+
+    // Initial focus when the page loads
+    focusAndSelectInput();
+
+    // Refocus when the page is shown (e.g., after back button or submission)
+    window.addEventListener('pageshow', function () {
+      focusAndSelectInput();
     });
 
-    // Refocus after form submission or if the page is reloaded from cache
-    window.addEventListener('pageshow', function () {
-      scanInput.value = ''; // Clear the input on page show
-      scanInput.focus();
-    });
   });
 </script>
 {% endblock scripts %}

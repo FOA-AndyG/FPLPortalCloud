@@ -89,7 +89,7 @@ def storage_search_view(request):
 
             if not results.exists():
                 results = None
-                messages.warning(request, f"No records found for '{query}'")
+                messages.warning(request, f"No pending records found for '{query}'")
 
     return render(
         request,
