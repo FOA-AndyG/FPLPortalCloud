@@ -369,7 +369,7 @@ def get_order_codes():
     else:
         order_record_name = 'orders_record'
 
-    q = f"""SELECT wh_code, carrier_code, master_ref_no FROM {order_record_name} WHERE status <> 'S' and status <> 'H' and status <> 'X' GROUP BY master_ref_no ORDER BY add_time desc"""
+    q = f"""SELECT wh_code, carrier_code, master_ref_no FROM {order_record_name} WHERE status <> 'S' and status <> 'H' and status <> 'X' and wh_code in ('FPLTX1', 'FURNITUREPROWH') GROUP BY master_ref_no ORDER BY add_time desc"""
 
     conn = mysql_connection()
     cursor = conn.cursor()
