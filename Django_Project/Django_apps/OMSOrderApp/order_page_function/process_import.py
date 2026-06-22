@@ -5,6 +5,7 @@ from django.utils import timezone
 from io import BytesIO
 
 import pandas as pd
+import numpy as np
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 
@@ -588,3 +589,118 @@ def process_check_fedex_order_zone(request):
         print("Error processing FedEx order zone:", str(e))
         return {"status": False, "msg": str(e)}
 
+
+def _filter_fedex_orders(df):
+    """
+    模块 1: 订单过滤
+    筛选出 FedEx 订单且 Tracking No. 符合 12 位数字规则的行
+    """
+    df_filtered = df[
+        df["Delivery Method"].str.contains("fedex", case=False, na=False) &
+        df["Tracking No."].astype(str).str.match(r"^\d{12}$") &
+        (df["订单内件数"] == 1)
+        ].copy()
+
+    return df_filtered
+
+
+def _apply_conveyable_logic(df_filtered):
+    """
+    模块 2: 尺寸合并与 Conveyable 判断 (目前仅针对 Industry)
+    """
+    # 提取 SKU 中 '*' 之前的部分
+    df_filtered['SKU'] = df_filtered['SKU'].astype(str).str.split('*').str[0]
+
+    # 获取产品尺寸数据
+    df_product_dim = get_wms_product_dimension()
+    if df_product_dim is None or df_product_dim.empty:
+        raise ValueError("Error: Product dimension data is empty or unavailable.")
+
+    # 关联订单与尺寸数据
+    df_merged = pd.merge(df_filtered, df_product_dim, on='SKU', how='left')
+
+    # 定义非可运输条件 - 为了保证产品一定能上传送带，将重量和尺寸都减少一定范围
+    # 比如原始重量大于27kg的产品，减少到25kg以下，尺寸大于121cm的产品，减少到118cm以下，长度大于68cm的产品，减少到65cm以下，高度和宽度同理
+    conveyable_conditions = (
+            (df_merged['Net Weight of Product'] < 25) &
+            (df_merged['length'] < 115) &
+            (df_merged['width'] < 60) &
+            (df_merged['height'] < 60)
+    )
+
+    # 打标
+    df_merged['Conveyable'] = conveyable_conditions
+    return df_merged
+
+
+def _generate_conveyable_report(df_merged):
+    """
+    模块 3: Excel 报表生成
+    按 Conveyable 状态拆分数据，计算体积并生成带有多个 Sheet 的 Excel 文件
+    """
+    df_conveyable = df_merged[df_merged['Conveyable'] == True]
+    df_non_conveyable = df_merged[df_merged['Conveyable'] == False]
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        # 安全计算体积 (兼容可能不存在 Volume 列的异常情况)
+        vol_conveyable = df_conveyable['Volume'].sum() / 1000000 if 'Volume' in df_conveyable else 0
+        vol_non_conveyable = df_non_conveyable['Volume'].sum() / 1000000 if 'Volume' in df_non_conveyable else 0
+
+        # 生成汇总数据
+        volume_data = [
+            ['Conveyable Orders', vol_conveyable],
+            ['Non-Conveyable Orders', vol_non_conveyable],
+        ]
+        df_volume = pd.DataFrame(volume_data, columns=['Category', 'Volume(m³)'])
+        df_volume['Expect Container qty of 53ft'] = (df_volume['Volume(m³)'] / 102.2).round(2)
+
+        # 写入各个 Sheet
+        df_volume.to_excel(writer, index=False, sheet_name="Volume Summary")
+        df_conveyable.to_excel(writer, index=False, sheet_name="Conveyable")
+        df_non_conveyable.to_excel(writer, index=False, sheet_name="Non-Conveyable")
+
+    output.seek(0)
+    return output
+
+
+def process_check_fedex_order_zone_new(request):
+    """
+    主控函数: 负责处理 HTTP 请求、调度各功能模块，并返回 HTTP 响应
+    (为了保持向后兼容，暂未修改函数名，可根据业务需要更名为 process_check_fedex_conveyable)
+    """
+    try:
+        # 1. 接收与基础校验
+        uploaded_file = request.FILES.get("import_file_path")
+        if not uploaded_file or not uploaded_file.name.endswith(('.xlsx', '.xls')):
+            return {"status": False, "msg": "Error: please upload a valid Excel file."}
+
+        df_orders = pd.read_excel(uploaded_file)
+
+        # 2. 过滤 FedEx 数据
+        df_filtered = _filter_fedex_orders(df_orders)
+        if df_filtered.empty:
+            return {"status": False, "msg": "No valid FedEx orders found in the uploaded file."}
+
+        # 3. 核心业务逻辑处理 (尺寸匹配与判定)
+        df_merged = _apply_conveyable_logic(df_filtered)
+
+        # 4. 生成 Excel 文件
+        output_buffer = _generate_conveyable_report(df_merged)
+
+        # 5. 构建响应
+        current_time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        response = HttpResponse(
+            output_buffer.read(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f"attachment; filename=fedex_conveyable_orders_{current_time_str}.xlsx"
+
+        return {"status": True, "response": response, "msg": "Success!"}
+
+    except ValueError as ve:
+        # 捕获业务逻辑中抛出的已知错误 (例如缺失尺寸数据)
+        return {"status": False, "msg": str(ve)}
+    except Exception as e:
+        # 捕获未知的系统错误
+        return {"status": False, "msg": f"System Error: {str(e)}"}

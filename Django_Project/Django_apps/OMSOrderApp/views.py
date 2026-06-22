@@ -19,7 +19,8 @@ from Django_apps.OMSOrderApp.api_handler.fedex_api import *
 from Django_apps.OMSOrderApp.api_handler.oms_api import createProduct, createReceivingOrder
 from Django_apps.OMSOrderApp.export_function.download_attachment import get_picking_list_no_db
 from Django_apps.OMSOrderApp.export_function.ils_order_import import ils_order_process_function
-from Django_apps.OMSOrderApp.order_page_function.process_import import process_check_fedex_order_zone
+from Django_apps.OMSOrderApp.order_page_function.process_import import process_check_fedex_order_zone, \
+    process_check_fedex_order_zone_new
 
 from Django_apps.OMSOrderApp.picking_functions.scan_support_functions import *
 from Django_apps.OMSOrderApp.reports.direct_sale_pricing_functions import *
@@ -620,7 +621,8 @@ def check_fedex_order_zone(request):
     if request.method == "POST":
         if 'import_button' in request.POST and "import_file_path" in request.FILES:
             print("import_button")
-            result = process_check_fedex_order_zone(request)
+            # result = process_check_fedex_order_zone(request)
+            result = process_check_fedex_order_zone_new(request)
             if result['status']:
                 return result['response']
             else:

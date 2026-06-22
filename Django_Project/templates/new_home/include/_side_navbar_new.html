@@ -30,7 +30,7 @@
                 {% if request.session.department == "IT" %}
                 <a class="collapse-item" href="/OMSOrderApp/oms_receiving_order_and_product">CFSFPL1 Product&Receiving Create</a>
                 <a class="collapse-item" href="/OMSOrderApp/fedex_tracking_status_checking">FedEx Tracking Status Checking</a>
-                <a class="collapse-item" href="/OMSOrderApp/check_fedex_order_zone">Check Fedex Zone</a>
+                <a class="collapse-item" href="/OMSOrderApp/check_fedex_order_zone">Check Fedex Conveyable Order</a>
                 {% endif %}
             </div>
         </div>
@@ -70,6 +70,21 @@
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="/TicketApp/storage_create">storage_create</a>
                 <a class="collapse-item" href="/TicketApp/storage_search">storage_search</a>
+            </div>
+        </div>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#return_tracking_menu"
+            aria-expanded="true" aria-controls="return_tracking_menu">
+            <i class="fas fa-fw fa-file-export"></i>
+            <span>Return Record</span>
+        </a>
+        <div id="return_tracking_menu" class="collapse" aria-labelledby="headingUtilities"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="/TicketApp/return_scan">Return Scan</a>
+                <a class="collapse-item" href="/TicketApp/return_scan_export">Return Export</a>
             </div>
         </div>
     </li>
