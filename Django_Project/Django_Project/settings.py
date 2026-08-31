@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'Django_apps.OMSOrderApp',
     'Django_apps.OSTKApiApp',
     'Django_apps.TicketApp',
+    'Django_apps.IntegrationApiApp',
 ]
 
 MIDDLEWARE = [
