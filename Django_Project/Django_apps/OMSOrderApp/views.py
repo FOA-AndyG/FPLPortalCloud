@@ -614,8 +614,8 @@ def check_fedex_order_zone(request):
         return redirect("HomeApp:login")
 
     content = {
-        "title": "Check Fedex Order Zone",
-        "page_head": "Check Fedex Order Zone",
+        "title": "Check Fedex Conveyable Order",
+        "page_head": "Check Fedex Conveyable Order",
     }
 
     if request.method == "POST":
