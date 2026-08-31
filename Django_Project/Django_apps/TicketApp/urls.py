@@ -15,4 +15,6 @@ urlpatterns = [
     path("storage_confirm/<int:record_id>/", views.storage_confirm_view, name="storage_confirm"),
     path("storage_logs/<int:record_id>/", views.storage_logs_view, name="storage_logs"),
 
+    path("return_scan/", views.return_scan_view, name="return_scan"),
+    path("return_scan_export/", views.return_scan_export_view, name="return_scan_export"),
 ]

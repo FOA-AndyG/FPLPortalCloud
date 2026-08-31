@@ -130,3 +130,28 @@ def storage_logs_view(request, record_id):
     record = get_object_or_404(LtlStorageRecord, id=record_id)
     logs = record.logs.all().order_by("-created_at")  # 按时间倒序
     return render(request, PAGE_PATH+"storage_logs.html", {"record": record, "logs": logs})
+
+
+def return_scan_view(request):
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+
+    content = {
+        "title": "Return Scan Page",
+        "page_head": "Return Scan Page",
+    }
+
+    return render(request, PAGE_PATH+"return_scan.html", content)
+
+
+def return_scan_export_view(request):
+    if not check_login_status(request):
+        return redirect("HomeApp:login")
+
+    content = {
+        "title": "Return Scan Export",
+        "page_head": "Return Scan Export",
+    }
+
+    return render(request, PAGE_PATH+"return_scan_report.html", content)
+

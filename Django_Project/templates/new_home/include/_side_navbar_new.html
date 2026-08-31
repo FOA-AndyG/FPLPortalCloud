@@ -64,33 +64,21 @@
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#order_app_menu"
             aria-expanded="true" aria-controls="order_app_menu">
             <i class="fas fa-fw fa-file-export"></i>
-            <span>LTL Bin</span>
+            <span>Utilities</span>
         </a>
         <div id="order_app_menu" class="collapse" aria-labelledby="headingUtilities"
             data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item" href="/TicketApp/storage_create">storage_create</a>
                 <a class="collapse-item" href="/TicketApp/storage_search">storage_search</a>
+                {% if request.session.username == "andy" %}
+                <a class="collapse-item" href="/TicketApp/return_scan">Return Scan</a>
+                <a class="collapse-item" href="/TicketApp/return_scan_export">Return Export</a>
+                {% endif %}
             </div>
         </div>
     </li>
 
-    {% if request.session.department == "IT" %}
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#return_tracking_menu"
-            aria-expanded="true" aria-controls="return_tracking_menu">
-            <i class="fas fa-fw fa-file-export"></i>
-            <span>Return Record</span>
-        </a>
-        <div id="return_tracking_menu" class="collapse" aria-labelledby="headingUtilities"
-            data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="/TicketApp/return_scan">Return Scan</a>
-                <a class="collapse-item" href="/TicketApp/return_scan_export">Return Export</a>
-            </div>
-        </div>
-    </li>
-    {% endif %}
     <!--  End  -->
 
     <!-- Divider -->

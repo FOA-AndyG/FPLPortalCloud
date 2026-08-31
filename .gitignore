@@ -131,6 +131,7 @@ dmypy.json
 # Andy
 .idea/
 # *.xlsx
+.codegraph/
 
 **/settings_local.py
 
