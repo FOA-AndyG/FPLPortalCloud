@@ -475,6 +475,28 @@ class ARJOIN(CustomerInterface):
         self.warehouseID = 7
 
 
+class GRUPITD(CustomerInterface):
+    def __init__(self):
+        super().__init__()
+        self.customerCode = "GRUPITD"
+        self.appToken = "482d609ab3c57b7febaa86d9bce8139d"
+        self.appKey = "ff2493b096394d0aa0ad0eb6f991f93e"
+        self.storageRate = 0.398
+        self.freeRentDays = 0
+        self.warehouseID = 7
+
+
+class GRUPPO(CustomerInterface):
+    def __init__(self):
+        super().__init__()
+        self.customerCode = "GRUPPO"
+        self.appToken = "d11fade498a470a5e2f6becf91d7f12f"
+        self.appKey = "40884025e92bb6f4eedf9024ab7afdd4"
+        self.storageRate = 0.398
+        self.freeRentDays = 0
+        self.warehouseID = 7
+
+
 # map the customer object to get key and token
 def get_customer_object(customer_code):
     customer_map = {
@@ -518,6 +540,8 @@ def get_customer_object(customer_code):
         "DIHONG": DIHONG(),
         "LINK": LINK(),
         "ARJOIN": ARJOIN(),
+        "GRUPITD": GRUPITD(),
+        "GRUPPO": GRUPPO(),
     }
     if customer_code == "ALL":
         return customer_map
